@@ -11,6 +11,7 @@ try {
     client = new DocumentProcessorServiceClient({
       credentials: credentials,
       projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+      apiEndpoint: 'us-documentai.googleapis.com',
     });
     console.log('Google Document AI client initialized successfully');
   } else {
