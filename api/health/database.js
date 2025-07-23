@@ -9,6 +9,19 @@ const supabase = createClient(
 );
 
 export default async function handler(req, res) {
+  // If query param ?config=true, return config debug info
+  if (req.query.config === 'true') {
+    return res.status(200).json({
+      config: {
+        hasCredentials: !!process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON,
+        hasProjectId: !!process.env.GOOGLE_CLOUD_PROJECT_ID,
+        hasProcessorId: !!process.env.GOOGLE_DOCUMENT_AI_PROCESSOR_ID,
+        projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+        processorId: process.env.GOOGLE_DOCUMENT_AI_PROCESSOR_ID,
+        credentialsLength: process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON?.length || 0
+      }
+    });
+  }
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
