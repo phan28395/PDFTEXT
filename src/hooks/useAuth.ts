@@ -282,12 +282,34 @@ export const useAuth = () => {
     }
   };
 
+  // Google sign-in function
+  const signInWithGoogle = async (): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+        },
+      });
+
+      if (error) {
+        return { success: false, error: handleSupabaseError(error, 'Google sign-in') };
+      }
+
+      return { success: true };
+    } catch (error: any) {
+      console.error('Google sign-in error:', error);
+      return { success: false, error: 'An unexpected error occurred. Please try again.' };
+    }
+  };
+
   return {
     ...authState,
     login,
     register,
     logout,
     resetPassword,
+    signInWithGoogle,
     isAuthenticated: !!authState.user,
   };
 };
