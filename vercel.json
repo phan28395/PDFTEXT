@@ -1,9 +1,8 @@
 {
   "functions": {
     "api/**/*.js": {
-      "runtime": "@vercel/node",
-      "maxDuration": 30,
-      "memory": 1024
+      "runtime": "nodejs18.x",
+      "maxDuration": 30
     }
   },
   "build": {
