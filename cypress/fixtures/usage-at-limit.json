@@ -1,0 +1,52 @@
+{
+  "user": {
+    "id": "user-999",
+    "email": "atlimit@example.com",
+    "subscription_plan": null,
+    "subscription_status": "free",
+    "pages_used_free": 10,
+    "pages_used_pro": 0,
+    "free_limit": 10,
+    "monthly_limit": null,
+    "subscription_period_end": null
+  },
+  "usage_stats": {
+    "total_processed": 10,
+    "pages_remaining": 0,
+    "usage_percentage": 100,
+    "can_process": false,
+    "error": "Page limit reached"
+  },
+  "alerts": [
+    {
+      "type": "limit_reached",
+      "message": "You have reached your free plan limit of 10 pages",
+      "severity": "critical",
+      "action_url": "/pricing",
+      "action_text": "Upgrade to Pro"
+    }
+  ],
+  "recent_processing": [
+    {
+      "id": "proc-7",
+      "filename": "document_a.pdf",
+      "pages": 3,
+      "status": "completed",
+      "created_at": "2023-12-01T08:00:00Z"
+    },
+    {
+      "id": "proc-8",
+      "filename": "document_b.pdf",
+      "pages": 4,
+      "status": "completed",
+      "created_at": "2023-12-01T10:15:00Z"
+    },
+    {
+      "id": "proc-9",
+      "filename": "document_c.pdf",
+      "pages": 3,
+      "status": "completed",
+      "created_at": "2023-12-01T14:30:00Z"
+    }
+  ]
+}

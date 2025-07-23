@@ -107,32 +107,24 @@ processing_history:
 
 ### Week 1-2: Core Development
 - [ ] Set up Vercel project with React
-- [ ] Configure Supabase database and auth with RLS
-- [ ] Implement user registration/login with email verification
-- [ ] Basic PDF upload interface with file validation
-- [ ] Google Document AI integration with sandboxing
-- [ ] Implement server-side file validation and rate limiting
-- [ ] Set up secure environment variable management
+- [ ] Configure Supabase database and auth
+- [ ] Implement user registration/login
+- [ ] Basic PDF upload interface
+- [ ] Google Document AI integration
 
-### Week 3-4: Business Logic & Security
-- [ ] Usage tracking system with race condition protection
-- [ ] Secure Stripe integration and webhook validation
-- [ ] Subscription management with fraud detection
-- [ ] User dashboard with session security
-- [ ] Payment flow testing and security audit
-- [ ] Implement GDPR compliance features
-- [ ] Add comprehensive audit logging
-- [ ] Set up monitoring and alerting
+### Week 3-4: Business Logic
+- [ ] Usage tracking system
+- [ ] Stripe integration and webhooks
+- [ ] Subscription management
+- [ ] User dashboard
+- [ ] Payment flow testing
 
-### Month 2: Secure Launch & Iteration
-- [ ] Security penetration testing
-- [ ] Deploy to production with monitoring
-- [ ] SEO optimization with security headers
-- [ ] Limited beta user testing and feedback
+### Month 2: Launch & Iteration
+- [ ] Deploy to production
+- [ ] SEO optimization
+- [ ] User testing and feedback
 - [ ] Marketing via social media
-- [ ] Add Markdown output support with sanitization
-- [ ] Implement malware scanning integration
-- [ ] Monitor security metrics and fraud attempts
+- [ ] Add Markdown output support
 
 ### Month 3+: Growth Features
 - [ ] DOCX output with basic formatting
@@ -172,61 +164,11 @@ processing_history:
 5. **Tracking**: Update user's page count in database
 
 ### Security Considerations
-
-#### Immediate Implementation (Pre-Launch Mandatory)
-- **HTTPS** for all data transfer with HSTS headers
-- **Server-side file validation**: PDF magic byte verification, 10MB limit, processing timeout (30s)
-- **Sandboxed processing**: Containerized Google Document AI calls
-- **API key security**: Environment variables with monthly rotation
-- **Input sanitization**: Escape filenames, sanitize all text outputs, validate all user inputs
-- **Rate limiting**: 10 uploads/minute per IP, enforce page quotas with database locks
-
-#### Authentication & Session Security
-- **Secure session management**: HttpOnly cookies for JWT storage, 24-hour timeout
-- **Password requirements**: Minimum 8 characters, mixed case, numbers
-- **Brute force protection**: Account lockout after 5 failed attempts (15min)
-- **Email verification**: Required before first processing
-- **Session invalidation**: Logout on password change
-
-#### Database Security
-- **Row Level Security (RLS)**: Enable in Supabase for all tables
-- **Connection pooling**: Limit concurrent connections
-- **Data encryption**: At-rest encryption for sensitive fields
-- **Audit logging**: Track all file processing, auth attempts, subscription changes
-- **Database indexing**: Optimize queries to prevent DoS via slow queries
-
-#### File Processing Security
-- **File type verification**: Magic byte validation beyond extension checking
-- **Malware scanning**: VirusTotal API integration for uploaded files
-- **Content sanitization**: Strip JavaScript from PDFs, validate all extracted content
-- **Resource limits**: Memory limits (128MB), CPU timeout (30s) per processing job
-- **Temporary file cleanup**: Automatic deletion after 1 hour maximum
-- **Output sanitization**: Escape markdown/HTML in extracted text
-
-#### Payment & Webhook Security
-- **Stripe webhook validation**: Signature verification with timestamp checks
-- **Idempotency handling**: Prevent duplicate payment processing
-- **Webhook replay protection**: Timestamp validation (5-minute window)
-- **Payment flow integrity**: Server-side price validation
-- **Fraud detection**: Enable Stripe Radar, device fingerprinting
-- **Chargeback monitoring**: Automated alerts for disputes
-
-#### GDPR Compliance Implementation
-- **Data export API**: Allow users to download all their data
-- **Right to deletion**: Cascade user data removal
-- **Data retention policies**: Auto-delete processing history after 1 year
-- **Privacy policy**: Detailed data usage documentation
-- **Cookie consent**: Granular consent for analytics/tracking
-- **Data minimization**: Store only essential user information
-- **Breach notification**: 72-hour reporting procedure
-
-#### API Security
-- **Google Document AI protection**: Usage monitoring, cost alerts
-- **API key rotation**: Monthly automated key updates
-- **Request validation**: Schema validation for all API calls
-- **Error handling**: Sanitize error messages to prevent information leakage
-- **API rate limiting**: Per-user quotas aligned with subscription tiers
-- **Monitoring**: Real-time alerts for unusual API usage patterns
+- HTTPS for all data transfer
+- Temporary file storage with automatic cleanup
+- Rate limiting to prevent abuse
+- Input validation and sanitization
+- Secure webhook validation for Stripe
 
 ### Scalability Plan
 - Vercel auto-scaling handles traffic spikes
@@ -237,13 +179,9 @@ processing_history:
 ## Risk Mitigation
 
 ### Technical Risks
-- **Google Document AI rate limits**: Implement queue system with backoff
-- **Security vulnerabilities**: Regular security audits, dependency updates
-- **Free tier abuse**: Email verification, rate limiting, device fingerprinting
-- **Processing failures**: Comprehensive error handling and user notification
-- **Data breaches**: Encryption, access controls, audit logging
-- **DDoS attacks**: Rate limiting, CDN protection, monitoring
-- **Payment fraud**: Stripe Radar, manual review thresholds
+- Google Document AI rate limits: Implement queue system
+- Free tier abuse: Email verification, rate limiting
+- Processing failures: Error handling and user notification
 
 ### Business Risks
 - Low conversion rates: Optimize free tier value

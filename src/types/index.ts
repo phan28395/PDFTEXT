@@ -1,24 +1,25 @@
-// User and Authentication Types
-export interface User {
-  id: string;
-  email: string;
-  created_at: string;
-  subscription_status: 'free' | 'pro';
-  pages_used: number;
-  pages_limit: number;
-  stripe_customer_id?: string;
-}
-
-// Processing History Types
-export interface ProcessingRecord {
-  id: string;
-  user_id: string;
-  filename: string;
-  pages_processed: number;
-  output_format: 'txt' | 'markdown' | 'docx';
-  created_at: string;
-  download_url?: string;
-}
+// Re-export database types for cleaner imports
+export type { 
+  User, 
+  UserInsert, 
+  UserUpdate, 
+  UserWithStats,
+  ProcessingRecord, 
+  ProcessingRecordInsert, 
+  ProcessingRecordUpdate,
+  ProcessingRecordWithDuration,
+  SubscriptionStatus,
+  OutputFormat,
+  ProcessingStatus,
+  DatabaseResponse,
+  PaginatedResponse,
+  AuthUser,
+  AuthSession,
+  Database,
+  ProcessingQueryFilters,
+  UserQueryFilters,
+  QueryFilters
+} from './database';
 
 // File Processing Types
 export interface FileUpload {

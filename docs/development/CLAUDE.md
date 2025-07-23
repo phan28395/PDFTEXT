@@ -13,9 +13,9 @@ This is a PDF-to-text conversion SaaS platform built with zero upfront costs usi
 **Working Directory**: `E:\CompanyBuilding\PDF-TO-TEXT`
 
 ## Key Files to Read First
-1. **STATUS.md** - Current progress and handoff information (READ THIS FIRST!)
-2. **saas-plan.md** - Complete project plan with security requirements
-3. **step-by-step-implementation.md** - Detailed implementation steps
+1. **docs/development/STATUS.md** - Current progress and handoff information (READ THIS FIRST!)
+2. **docs/development/saas-plan.md** - Complete project plan with security requirements
+3. **docs/development/step-by-step-implementation.md** - Detailed implementation steps
 4. **package.json** - Dependencies and scripts (if exists)
 
 ## Your Role
@@ -26,14 +26,14 @@ You are continuing the development of this PDF-to-text SaaS platform. Each Claud
 ### 1. FIRST: Read Current Status
 ```bash
 # Always start by reading these files to understand current state:
-- STATUS.md (current progress and next steps)
-- step-by-step-implementation.md (full task list)
-- saas-plan.md (security and business requirements)
+- docs/development/STATUS.md (current progress and next steps)
+- docs/development/step-by-step-implementation.md (full task list)
+- docs/development/saas-plan.md (security and business requirements)
 ```
 
 ### 2. Understand Your Starting Point
-- Check which step in `step-by-step-implementation.md` is currently active
-- Read the "Next Actions" section in STATUS.md
+- Check which step in `docs/development/step-by-step-implementation.md` is currently active
+- Read the "Next Actions" section in docs/development/STATUS.md
 - Review any "Known Issues" or "Important Notes"
 - Check which files have been created/modified
 
@@ -79,7 +79,7 @@ src/
 
 After completing your assigned tasks:
 
-1. **Update STATUS.md** with:
+1. **Update docs/development/STATUS.md** with:
    - Tasks completed (check them off)
    - Current step status
    - Next actions for the following agent
@@ -91,7 +91,7 @@ After completing your assigned tasks:
 
 3. **Leave TODO comments** in code for complex items that need attention
 
-4. **Document environment variables** needed in STATUS.md
+4. **Document environment variables** needed in docs/development/STATUS.md
 
 5. **Test your implementation** before marking tasks complete
 
@@ -119,10 +119,10 @@ npm run format
 
 ### 7. When You Encounter Issues
 
-1. **Check existing issues** in STATUS.md first
+1. **Check existing issues** in docs/development/STATUS.md first
 2. **Search codebase** for similar implementations
 3. **Consult main plan** for security and business requirements
-4. **Document the issue** in STATUS.md for the next agent
+4. **Document the issue** in docs/development/STATUS.md for the next agent
 5. **Provide workarounds** or alternative approaches when possible
 
 ### 8. Critical Security Checklist
@@ -152,7 +152,7 @@ For Supabase integration:
 - Create proper indexes for performance
 - Use transactions for multi-step operations
 - Implement proper error handling
-- Follow the schema defined in saas-plan.md
+- Follow the schema defined in docs/development/saas-plan.md
 
 ## Emergency Contacts & Resources
 
@@ -168,10 +168,16 @@ For Supabase integration:
 "Please continue the process"
 
 This will trigger you to:
-1. Read STATUS.md to understand current progress
-2. Continue with the next step in step-by-step-implementation.md
+1. Read docs/development/STATUS.md to understand current progress
+2. Continue with the next step in docs/development/step-by-step-implementation.md
 3. Follow all security and quality requirements
-4. Update STATUS.md with your progress when complete
+4. Update docs/development/STATUS.md with your progress when complete
+
+**IMPORTANT**: If all 26 steps from docs/development/step-by-step-implementation.md are marked as completed in docs/development/STATUS.md, then respond with:
+
+"Everything is done. No more implementation steps remain. The PDF-to-text SaaS platform is complete and ready for production deployment."
+
+Do not attempt to create additional tasks or continue implementation beyond the defined 26-step plan.
 
 ## Important Reminders
 - **Security first**: Every feature must be implemented securely

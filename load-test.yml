@@ -1,0 +1,279 @@
+# Artillery.io load testing configuration for PDF-to-Text SaaS
+
+config:
+  target: 'http://localhost:3000'
+  phases:
+    # Warm-up phase
+    - duration: 60
+      arrivalRate: 1
+      name: "Warm-up"
+    
+    # Gradual ramp-up
+    - duration: 300
+      arrivalRate: 1
+      rampTo: 10
+      name: "Ramp-up"
+    
+    # Sustained load
+    - duration: 600
+      arrivalRate: 10
+      name: "Sustained load"
+    
+    # Peak load test
+    - duration: 120
+      arrivalRate: 50
+      name: "Peak load"
+    
+    # Cool down
+    - duration: 60
+      arrivalRate: 10
+      rampTo: 1
+      name: "Cool down"
+  
+  payload:
+    path: "./test-data.csv"
+    fields:
+      - "email"
+      - "password"
+    order: sequence
+  
+  defaults:
+    headers:
+      'User-Agent': 'Artillery Load Test'
+      'Accept': 'application/json'
+      'Content-Type': 'application/json'
+  
+  plugins:
+    expect: {}
+    metrics-by-endpoint: {}
+    publish-metrics:
+      type: 'datadog'
+      prefix: 'pdf_saas.loadtest'
+      tags:
+        - 'env:test'
+        - 'service:pdf-processing'
+
+scenarios:
+  # Public pages load test
+  - name: "Public pages browsing"
+    weight: 30
+    flow:
+      - get:
+          url: "/"
+          expect:
+            - statusCode: 200
+            - contentType: text/html
+          capture:
+            - header: "x-response-time"
+              as: "homePageTime"
+      
+      - get:
+          url: "/pricing"
+          expect:
+            - statusCode: 200
+          think: 2
+      
+      - get:
+          url: "/login"
+          expect:
+            - statusCode: 200
+
+  # User authentication flow
+  - name: "User authentication"
+    weight: 20
+    flow:
+      # Register new user
+      - post:
+          url: "/api/auth/register"
+          json:
+            email: "test{{ $randomString() }}@example.com"
+            password: "TestPassword123!"
+            confirmPassword: "TestPassword123!"
+          expect:
+            - statusCode: [200, 201]
+          capture:
+            - json: "$.user.id"
+              as: "userId"
+      
+      # Login
+      - post:
+          url: "/api/auth/login"  
+          json:
+            email: "{{ email }}"
+            password: "{{ password }}"
+          expect:
+            - statusCode: 200
+          capture:
+            - json: "$.session.access_token"
+              as: "accessToken"
+      
+      # Access protected route
+      - get:
+          url: "/api/usage-stats"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          expect:
+            - statusCode: 200
+
+  # PDF processing workflow
+  - name: "PDF processing"
+    weight: 25
+    flow:
+      # Login first
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ email }}"
+            password: "{{ password }}"
+          expect:
+            - statusCode: 200
+          capture:
+            - json: "$.session.access_token"
+              as: "accessToken"
+      
+      # Check usage stats
+      - get:
+          url: "/api/usage-stats"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          expect:
+            - statusCode: 200
+          capture:
+            - json: "$.user.pages_remaining"
+              as: "pagesRemaining"
+      
+      # Process PDF (simulation - we don't actually upload files in load test)
+      - post:
+          url: "/api/process-pdf-simulation"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            filename: "test-document-{{ $randomInt(1, 100) }}.pdf"
+            pages: "{{ $randomInt(1, 10) }}"
+          expect:
+            - statusCode: [200, 400, 429]  # 400 for limits, 429 for rate limiting
+          think: 10  # Processing time simulation
+      
+      # Get processing history
+      - get:
+          url: "/api/processing-history"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          expect:
+            - statusCode: 200
+
+  # Payment flow simulation
+  - name: "Payment flow"
+    weight: 10
+    flow:
+      # Login
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ email }}"
+            password: "{{ password }}"
+          expect:
+            - statusCode: 200
+          capture:
+            - json: "$.session.access_token"
+              as: "accessToken"
+      
+      # Create checkout session
+      - post:
+          url: "/api/stripe/create-checkout-session"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            priceId: "price_pro_monthly"
+          expect:
+            - statusCode: [200, 400]
+          capture:
+            - json: "$.sessionId"
+              as: "checkoutSessionId"
+      
+      # Check subscription status
+      - get:
+          url: "/api/stripe/subscription"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          expect:
+            - statusCode: 200
+
+  # Admin dashboard access
+  - name: "Admin operations"
+    weight: 5
+    flow:
+      # Admin login (would need admin test account)
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "admin@example.com"
+            password: "AdminPassword123!"
+          expect:
+            - statusCode: 200
+          capture:
+            - json: "$.session.access_token"
+              as: "adminToken"
+      
+      # Admin dashboard data
+      - get:
+          url: "/api/admin/system-metrics"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: [200, 403]  # 403 if not admin
+      
+      # Error monitoring
+      - get:
+          url: "/api/admin/audit-logs"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: [200, 403]
+
+  # API stress test
+  - name: "API rate limit testing"
+    weight: 10
+    flow:
+      # Rapid API calls to test rate limiting
+      - loop:
+        - get:
+            url: "/api/health"
+            expect:
+              - statusCode: [200, 429]
+        count: 20
+        whileTrue: "template"
+
+# Custom functions for realistic test data
+functions:
+  generateRandomEmail: |
+    function(context, ee, next) {
+      const timestamp = Date.now();
+      const random = Math.random().toString(36).substring(7);
+      context.vars.randomEmail = `test_${timestamp}_${random}@example.com`;
+      return next();
+    }
+  
+  logResponse: |
+    function(context, ee, next) {
+      if (context.vars.target && context.vars.target.response) {
+        console.log('Response time:', context.vars.target.response.time);
+      }
+      return next();
+    }
+
+# Performance thresholds and checks
+thresholds:
+  http_req_duration:
+    - threshold: percentile(95) < 1000  # 95% of requests under 1s
+      abortOnFail: false
+    - threshold: percentile(99) < 2000  # 99% of requests under 2s
+      abortOnFail: false
+  
+  http_req_failed:
+    - threshold: rate < 0.05  # Error rate under 5%
+      abortOnFail: true
+  
+  vus_max:
+    - threshold: value < 100  # Max 100 virtual users
+      abortOnFail: true

@@ -1,11 +1,5 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(npm install)",
-      "Bash(mkdir:*)",
-      "Bash(npm run type-check:*)",
-      "Bash(npm run build:*)"
-    ],
     "defaultMode": "bypassPermissions"
   }
 }
