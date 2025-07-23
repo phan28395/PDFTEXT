@@ -3,8 +3,7 @@
     "api/**/*.js": {
       "runtime": "@vercel/node",
       "maxDuration": 30,
-      "memory": 1024,
-      "regions": ["iad1", "fra1", "hnd1"]
+      "memory": 1024
     }
   },
   "build": {
