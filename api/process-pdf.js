@@ -4,6 +4,7 @@ import fs from 'fs';
 
 // Initialize Google Document AI client using JSON credentials from environment
 let client;
+let initError = null;
 try {
   if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
     const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
@@ -11,10 +12,13 @@ try {
       credentials: credentials,
       projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
     });
+    console.log('Google Document AI client initialized successfully');
   } else {
-    throw new Error('Google credentials not found');
+    initError = 'Google credentials environment variable not found';
+    throw new Error(initError);
   }
 } catch (error) {
+  initError = error.message;
   console.error('Failed to initialize Google Document AI:', error);
 }
 
@@ -31,11 +35,11 @@ export default async function handler(req, res) {
 
   if (!client) {
     // Fallback to dummy processing if Google AI not configured
-    console.log('Google Document AI not configured, using fallback');
+    console.log('Google Document AI not configured, using fallback. Error:', initError);
     return res.status(200).json({
       success: true,
       data: {
-        text: "Google Document AI not configured. This is fallback text processing. Please check your environment variables.",
+        text: `Google Document AI not configured. Error: ${initError}. Please check your environment variables.`,
         pages: 1,
         processingTime: 1000,
         confidence: 0.8,
