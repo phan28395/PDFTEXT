@@ -1,4 +1,5 @@
 {
+  "name": "pdf-to-text-saas",
   "build": {
     "env": {
       "NODE_ENV": "production"
@@ -99,10 +100,8 @@
   ],
   "rewrites": [
     {
-      "source": "/((?!api).*)", 
+      "source": "/((?!api|_next|static|favicon.ico).*)",
       "destination": "/index.html"
     }
-  ],
-  "cleanUrls": true,
-  "trailingSlash": false
+  ]
 }
