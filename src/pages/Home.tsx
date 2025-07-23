@@ -214,18 +214,18 @@ Time: 2:00 PM EST`,
     <PublicLayout className="bg-white">
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
           <div className="text-center">
             <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl md:text-5xl lg:text-6xl">
               Extract Text from Any Document
               <span className="text-blue-600"> with AI Precision</span>
             </h1>
-            <p className="mt-4 text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            <p className="mt-3 text-lg text-gray-600 max-w-2xl mx-auto">
               Convert PDFs, images, and scanned documents to editable text in multiple formats. 
               Perfect for academic papers, invoices, handwritten notes, and mathematical formulas.
             </p>
             
-            <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link 
                 to="/register" 
                 className="bg-blue-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg text-base sm:text-lg font-medium hover:bg-blue-700 transform transition-all duration-200 hover:scale-105 inline-flex items-center shadow-lg"
@@ -236,11 +236,11 @@ Time: 2:00 PM EST`,
             </div>
 
             {/* Trust Indicators */}
-            <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+            <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
               {stats.map((stat, index) => (
                 <div key={index} className="text-center">
-                  <div className="text-2xl md:text-3xl font-bold text-blue-600">{stat.value}</div>
-                  <div className="text-sm text-gray-600">{stat.label}</div>
+                  <div className="text-xl md:text-2xl font-bold text-blue-600">{stat.value}</div>
+                  <div className="text-xs text-gray-600">{stat.label}</div>
                 </div>
               ))}
             </div>
