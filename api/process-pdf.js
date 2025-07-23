@@ -98,10 +98,23 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('Processing error:', error);
+    console.error('Processing error details:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      details: error.details,
+      name: error.name
+    });
+    
     return res.status(500).json({ 
       success: false, 
-      error: error.message || 'Processing failed' 
+      error: error.message || 'Processing failed',
+      debug: {
+        hasCredentials: !!process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON,
+        hasProjectId: !!process.env.GOOGLE_CLOUD_PROJECT_ID,
+        hasProcessorId: !!process.env.GOOGLE_DOCUMENT_AI_PROCESSOR_ID,
+        clientInitialized: !!client
+      }
     });
   }
 }
