@@ -217,12 +217,11 @@ Time: 2:00 PM EST`,
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl md:text-4xl lg:text-5xl">
-              Extract Text from Any Document
-              <span className="text-blue-600"> with AI Precision</span>
+              PDF to Text
+              <span className="text-blue-600"> in Seconds</span>
             </h1>
-            <p className="mt-2 text-base text-gray-600 max-w-2xl mx-auto">
-              Convert PDFs, images, and scanned documents to editable text in multiple formats. 
-              Perfect for academic papers, invoices, handwritten notes, and mathematical formulas.
+            <p className="mt-2 text-base text-gray-600 max-w-xl mx-auto">
+              AI-powered extraction for any document. Math formulas, handwriting, invoices — we handle it all.
             </p>
             
             <div className="mt-4 flex flex-col sm:flex-row gap-3 justify-center items-center">
@@ -236,11 +235,11 @@ Time: 2:00 PM EST`,
             </div>
 
             {/* Trust Indicators */}
-            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3 max-w-2xl mx-auto">
+            <div className="mt-4 flex flex-wrap justify-center gap-4 text-sm text-gray-600">
               {stats.map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="text-lg md:text-xl font-bold text-blue-600">{stat.value}</div>
-                  <div className="text-xs text-gray-600">{stat.label}</div>
+                <div key={index} className="flex items-center">
+                  <span className="font-bold text-blue-600">{stat.value}</span>
+                  <span className="ml-1">{stat.label}</span>
                 </div>
               ))}
             </div>
@@ -253,11 +252,8 @@ Time: 2:00 PM EST`,
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl mb-4">
-              See What You Can Extract
+              Real Examples
             </h2>
-            <p className="text-lg text-gray-600">
-              From complex academic papers to handwritten notes - see real examples of our AI in action
-            </p>
           </div>
 
           {/* Example Type Selector */}
