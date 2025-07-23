@@ -18,7 +18,7 @@ export default function Footer({ className = '' }: FooterProps) {
             </div>
             <p className="text-gray-400 max-w-md">
               Convert your PDF documents to editable text with enterprise-grade security. 
-              Fast, accurate, and secure PDF-to-text conversion powered by Google Document AI.
+              Fast, accurate, and secure PDF-to-text conversion powered by advanced AI technology.
             </p>
             <div className="flex items-center space-x-4 mt-6">
               <div className="flex items-center space-x-2 text-sm text-gray-400">
@@ -37,22 +37,22 @@ export default function Footer({ className = '' }: FooterProps) {
             <h3 className="text-lg font-semibold mb-4">Product</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/features" className="text-gray-400 hover:text-white transition-colors">
                   Features
                 </Link>
               </li>
               <li>
-                <Link to="/" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/pricing" className="text-gray-400 hover:text-white transition-colors">
                   Pricing
                 </Link>
               </li>
               <li>
-                <Link to="/" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/api-docs" className="text-gray-400 hover:text-white transition-colors">
                   API Documentation
                 </Link>
               </li>
               <li>
-                <Link to="/" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/security" className="text-gray-400 hover:text-white transition-colors">
                   Security
                 </Link>
               </li>
@@ -64,28 +64,25 @@ export default function Footer({ className = '' }: FooterProps) {
             <h3 className="text-lg font-semibold mb-4">Company</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/about" className="text-gray-400 hover:text-white transition-colors">
                   About Us
                 </Link>
               </li>
               <li>
-                <Link to="/" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/privacy" className="text-gray-400 hover:text-white transition-colors">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link to="/" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/terms" className="text-gray-400 hover:text-white transition-colors">
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <a 
-                  href="mailto:support@pdftotext.com" 
-                  className="text-gray-400 hover:text-white transition-colors flex items-center space-x-1"
-                >
+                <Link to="/contact" className="text-gray-400 hover:text-white transition-colors flex items-center space-x-1">
                   <Mail className="h-4 w-4" />
                   <span>Contact</span>
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -97,9 +94,6 @@ export default function Footer({ className = '' }: FooterProps) {
             © 2025 PDFtoText. All rights reserved.
           </div>
           <div className="flex items-center space-x-6 mt-4 sm:mt-0">
-            <div className="text-sm text-gray-400">
-              Powered by Google Document AI
-            </div>
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-green-400 rounded-full"></div>
               <span className="text-sm text-gray-400">All systems operational</span>

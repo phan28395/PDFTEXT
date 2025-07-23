@@ -18,6 +18,12 @@ const Privacy = lazy(() => import('./pages/Privacy'));
 const BatchProcessing = lazy(() => import('./pages/BatchProcessing'));
 const AccountSettings = lazy(() => import('./pages/AccountSettings'));
 const UsageHistory = lazy(() => import('./pages/UsageHistory'));
+const Features = lazy(() => import('./pages/Features'));
+const ApiDocs = lazy(() => import('./pages/ApiDocs'));
+const Security = lazy(() => import('./pages/Security'));
+const About = lazy(() => import('./pages/About'));
+const Terms = lazy(() => import('./pages/Terms'));
+const Contact = lazy(() => import('./pages/Contact'));
 
 function App() {
   return (
@@ -29,6 +35,12 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/privacy" element={<Privacy />} />
+          <Route path="/features" element={<Features />} />
+          <Route path="/api-docs" element={<ApiDocs />} />
+          <Route path="/security" element={<Security />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/contact" element={<Contact />} />
           
           {/* Auth routes - redirect to dashboard if already authenticated */}
           <Route 
