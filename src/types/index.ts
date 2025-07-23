@@ -8,7 +8,7 @@ export type {
   ProcessingRecordInsert, 
   ProcessingRecordUpdate,
   ProcessingRecordWithDuration,
-  SubscriptionStatus,
+  UserStatus,
   OutputFormat,
   ProcessingStatus,
   DatabaseResponse,
