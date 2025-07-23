@@ -28,21 +28,25 @@ export default function Home() {
 
   const examples = {
     academic: {
-      title: 'Academic Papers',
-      description: 'Extract text from research papers with perfect citation formatting',
+      title: 'Academic Papers & Math',
+      description: 'Extract text from research papers with citations, formulas, and mathematical equations',
       icon: BookOpen,
-      input: 'Complex research paper with citations, footnotes, and mathematical formulas',
+      input: 'Research papers with citations, footnotes, and complex mathematical formulas',
       outputs: {
         markdown: `# Machine Learning in Natural Language Processing
 
 ## Abstract
 This paper presents a comprehensive study of machine learning applications in natural language processing...
 
-## 1. Introduction
-Natural language processing (NLP) has undergone significant transformation with the advent of deep learning techniques [1].
+## 1. Mathematical Foundation
+The derivative of a function f(x) at point x is defined as:
 
-### 1.1 Background
-The field of NLP combines computational linguistics with machine learning to enable computers to process and analyze large amounts of natural language data.
+$$\\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}$$
+
+### 1.1 Neural Network Optimization
+The gradient descent algorithm updates weights using:
+
+$$w_{t+1} = w_t - \\alpha \\nabla J(w_t)$$
 
 ## References
 [1] Smith, J. et al. (2023). "Deep Learning for NLP", *Journal of AI Research*, 45(2), 123-145.`,
@@ -51,53 +55,64 @@ The field of NLP combines computational linguistics with machine learning to ena
 Abstract
 This paper presents a comprehensive study of machine learning applications in natural language processing...
 
-1. Introduction
-Natural language processing (NLP) has undergone significant transformation with the advent of deep learning techniques [1].
-
-1.1 Background
-The field of NLP combines computational linguistics with machine learning to enable computers to process and analyze large amounts of natural language data.
-
-References
-[1] Smith, J. et al. (2023). "Deep Learning for NLP", Journal of AI Research, 45(2), 123-145.`,
-        docx: 'Formatted DOCX with preserved headings, citations, and academic structure ready for Word processing.'
-      }
-    },
-    math: {
-      title: 'Mathematical Formulas',
-      description: 'Convert equations to LaTeX, plain text, or editable formats',
-      icon: Calculator,
-      input: 'Images or PDFs containing complex mathematical equations and formulas',
-      outputs: {
-        markdown: `# Calculus Fundamentals
-
-## Derivatives
-The derivative of a function f(x) at point x is defined as:
-
-$$\\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}$$
-
-## Integrals
-The fundamental theorem of calculus states:
-
-$$\\int_a^b f'(x)dx = f(b) - f(a)$$
-
-## Chain Rule
-For composite functions:
-
-$$\\frac{d}{dx}[f(g(x))] = f'(g(x)) \\cdot g'(x)$$`,
-        txt: `Calculus Fundamentals
-
-Derivatives
+1. Mathematical Foundation
 The derivative of a function f(x) at point x is defined as:
 lim(h→0) [f(x+h) - f(x)]/h
 
-Integrals
-The fundamental theorem of calculus states:
-∫[a to b] f'(x)dx = f(b) - f(a)
+1.1 Neural Network Optimization
+The gradient descent algorithm updates weights using:
+w(t+1) = w(t) - α∇J(w(t))
 
-Chain Rule
-For composite functions:
-d/dx[f(g(x))] = f'(g(x)) · g'(x)`,
-        docx: 'Mathematical equations preserved as editable formulas in Microsoft Word format with proper mathematical notation.'
+References
+[1] Smith, J. et al. (2023). "Deep Learning for NLP", Journal of AI Research, 45(2), 123-145.`,
+        docx: 'Academic paper with preserved citations, mathematical equations, and proper formatting ready for Word processing.'
+      }
+    },
+    batch: {
+      title: 'Batch Processing',
+      description: 'Process hundreds of documents at once with automated workflows',
+      icon: Users,
+      input: 'Multiple PDFs uploaded simultaneously for bulk processing',
+      outputs: {
+        markdown: `# Batch Processing Results
+
+## Processing Summary
+- **Total Files:** 247 documents
+- **Successfully Processed:** 245 documents  
+- **Processing Time:** 4 minutes 32 seconds
+- **Average Accuracy:** 99.7%
+
+## File Results
+| Filename | Pages | Status | Format |
+|----------|-------|---------|---------|
+| research_paper_01.pdf | 15 | ✅ Complete | MD, TXT, DOCX |
+| invoice_batch_02.pdf | 3 | ✅ Complete | MD, TXT, DOCX |
+| meeting_notes_03.pdf | 8 | ✅ Complete | MD, TXT, DOCX |
+| technical_report_04.pdf | 42 | ✅ Complete | MD, TXT, DOCX |
+
+## Download Options
+- Individual files or bulk ZIP download
+- Multiple format export (TXT, MD, DOCX)
+- Processing history and analytics`,
+        txt: `Batch Processing Results
+
+Processing Summary:
+- Total Files: 247 documents
+- Successfully Processed: 245 documents
+- Processing Time: 4 minutes 32 seconds
+- Average Accuracy: 99.7%
+
+File Results:
+research_paper_01.pdf - 15 pages - Complete - MD, TXT, DOCX
+invoice_batch_02.pdf - 3 pages - Complete - MD, TXT, DOCX
+meeting_notes_03.pdf - 8 pages - Complete - MD, TXT, DOCX
+technical_report_04.pdf - 42 pages - Complete - MD, TXT, DOCX
+
+Download Options:
+- Individual files or bulk ZIP download
+- Multiple format export (TXT, MD, DOCX)
+- Processing history and analytics`,
+        docx: 'Batch processing results formatted as a professional report with tables, statistics, and download links in Word format.'
       }
     },
     invoice: {
@@ -201,7 +216,7 @@ Time: 2:00 PM EST`,
       <section className="bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl md:text-6xl lg:text-7xl">
+            <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl md:text-5xl lg:text-6xl">
               Extract Text from Any Document
               <span className="text-blue-600"> with AI Precision</span>
             </h1>
@@ -215,7 +230,7 @@ Time: 2:00 PM EST`,
                 to="/register" 
                 className="bg-blue-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg text-base sm:text-lg font-medium hover:bg-blue-700 transform transition-all duration-200 hover:scale-105 inline-flex items-center shadow-lg"
               >
-                Try Free - No Credit Card Required
+                Try Now
                 <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
               </Link>
             </div>
@@ -373,55 +388,6 @@ Time: 2:00 PM EST`,
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-              How It Works
-            </h2>
-            <p className="mt-4 text-lg text-gray-600">
-              Three simple steps to convert your documents
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-            <div className="text-center group">
-              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-200 transition-colors">
-                <Upload className="h-8 w-8 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">1. Upload</h3>
-              <p className="text-gray-600">
-                Drag and drop your PDF, image, or scanned document. 
-                We support all major formats up to 100MB.
-              </p>
-            </div>
-
-            <div className="text-center group">
-              <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-green-200 transition-colors">
-                <Zap className="h-8 w-8 text-green-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">2. AI Processing</h3>
-              <p className="text-gray-600">
-                Our Google Document AI analyzes your document with advanced OCR and 
-                machine learning for maximum accuracy.
-              </p>
-            </div>
-
-            <div className="text-center group">
-              <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-purple-200 transition-colors">
-                <Download className="h-8 w-8 text-purple-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">3. Download</h3>
-              <p className="text-gray-600">
-                Get your extracted text in TXT, Markdown, or DOCX format. 
-                Perfect formatting preserved, ready to use.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Social Proof */}
       <section className="py-16 bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -438,31 +404,6 @@ Time: 2:00 PM EST`,
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-blue-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white sm:text-4xl mb-6">
-            Ready to Extract Your First Document?
-          </h2>
-          <p className="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
-            Join thousands of users who trust our AI for accurate, secure, and fast document processing.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link
-              to="/register"
-              className="bg-white text-blue-600 px-8 py-4 rounded-lg text-lg font-medium hover:bg-gray-100 transition-colors inline-flex items-center"
-            >
-              <FileText className="mr-2 h-5 w-5" />
-              Start Converting Now
-            </Link>
-            <div className="flex items-center text-blue-100">
-              <Check className="h-4 w-4 mr-2" />
-              <span>10 free pages • No credit card required</span>
-            </div>
-          </div>
-        </div>
-      </section>
     </PublicLayout>
   );
 }
