@@ -136,10 +136,17 @@ export default function Security() {
             </h2>
             <div className="bg-gray-50 rounded-lg p-8">
               <p className="text-gray-600 mb-6 leading-relaxed">
-                Our document processing is powered by secure cloud infrastructure. For detailed 
-                information about the security standards, certifications, and compliance measures 
-                of our processing infrastructure, please refer to the comprehensive security 
-                documentation provided by our cloud service providers.
+                We are committed to implementing and maintaining the highest security standards for our service. 
+                However, since our document processing relies on external cloud services, the complete security 
+                posture includes both our application-level security measures and the infrastructure security 
+                provided by our cloud service partners.
+              </p>
+              <p className="text-gray-600 mb-6 leading-relaxed">
+                While we ensure secure transmission, authentication, and privacy controls on our end, 
+                aspects such as enterprise certifications (SOC 2, ISO 27001), infrastructure-level 
+                encryption, and compliance measures are provided by our underlying cloud infrastructure. 
+                For comprehensive details about these enterprise-grade security features, certifications, 
+                and compliance standards, please refer to our cloud service provider's security documentation.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a 
@@ -148,7 +155,18 @@ export default function Security() {
                   rel="noopener noreferrer"
                   className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors inline-flex items-center justify-center"
                 >
-                  View Cloud Security Details
+                  View Cloud Infrastructure Security
+                  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+                <a 
+                  href="https://cloud.google.com/security/compliance/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-200 transition-colors inline-flex items-center justify-center"
+                >
+                  View Compliance Details
                   <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                   </svg>
