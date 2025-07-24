@@ -40,8 +40,10 @@ function generateCSP(config: SecurityHeadersConfig): string {
   // Enhanced CSP for production with stricter policies
   let csp = [
     "default-src 'self'",
-    // Script sources with nonce for inline scripts
-    `script-src 'self' ${isDev ? "'unsafe-inline' 'unsafe-eval'" : `'nonce-${nonce}'`} https://js.stripe.com https://checkout.stripe.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/`,
+    // Script sources with nonce for inline scripts and PDF.js specific hashes
+    // PDF.js hashes: vS0ezAgu... and mhaa2hnTXn9... are for worker initialization
+    // PDF.js hashes: if99PmkT... and Sn57jJ2U... are for content rendering
+    `script-src 'self' ${isDev ? "'unsafe-inline' 'unsafe-eval'" : `'nonce-${nonce}' 'sha256-vS0ezAgu/yL7GFO1DZDdmpIGJkFe3Aeu0nUGSQ3nczY=' 'sha256-mhaa2hnTXn9uPsPhcD2Fz4h7ptRfaGvDbLIL5pl6sk8=' 'sha256-if99PmkT48acTlvF7VY0zUcQcx9T3Ssjea89B/aXy7k=' 'sha256-Sn57jJ2ULaxRhko/IMfP0Ir7GMTKzYvx2WYMeTR5qSc='`} https://js.stripe.com https://checkout.stripe.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/`,
     // Style sources
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     // Font sources

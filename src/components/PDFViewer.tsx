@@ -81,14 +81,20 @@ export default function PDFViewer({ file, onPageRangeSelect, onFormatSelect, cla
           cMapUrl: '/cmaps/',
           cMapPacked: true,
           standardFontDataUrl: '/standard_fonts/',
-          // Add options for better compatibility and CSP compliance
+          // Strict CSP compliance options
           isEvalSupported: false,
           disableAutoFetch: true,
           disableStream: true,
+          useSystemFonts: false,
           // Additional error handling options
           stopAtErrors: false,
           disableFontFace: false,
           enableXfa: false,
+          // Prevent any potential inline script generation
+          verbosity: 0, // Reduce console output that might use eval
+          maxImageSize: 16777216, // Limit image processing to prevent memory issues
+          disableRange: true, // Disable range requests for security
+          disableCreateObjectURL: false, // Keep object URLs for blob handling
         });
         
         // Add progress handler
