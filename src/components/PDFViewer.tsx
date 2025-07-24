@@ -11,7 +11,11 @@ if (typeof window !== 'undefined') {
     // Disable eval for security and CSP compliance
     pdfjs.GlobalWorkerOptions.isEvalSupported = false;
     
+    // Add error handler for worker
+    pdfjs.GlobalWorkerOptions.workerPort = null;
+    
     console.log('PDF.js configured with local worker for CSP compliance');
+    console.log('Worker path:', pdfjs.GlobalWorkerOptions.workerSrc);
   } catch (error) {
     console.warn('Failed to configure PDF.js worker:', error);
     // Fallback: disable worker entirely if local worker fails
@@ -75,6 +79,14 @@ export default function PDFViewer({ file, onPageRangeSelect, onFormatSelect, cla
         // Convert file to array buffer
         const arrayBuffer = await file.arrayBuffer();
         
+        // Log resource paths for debugging
+        console.log('PDF.js resource configuration:', {
+          cMapUrl: '/cmaps/',
+          standardFontDataUrl: '/standard_fonts/',
+          workerSrc: pdfjs.GlobalWorkerOptions.workerSrc,
+          baseUrl: window.location.origin
+        });
+        
         // Load PDF with local resources for CSP compliance
         const loadingTask = pdfjs.getDocument({
           data: arrayBuffer,
@@ -83,7 +95,7 @@ export default function PDFViewer({ file, onPageRangeSelect, onFormatSelect, cla
           standardFontDataUrl: '/standard_fonts/',
           // Strict CSP compliance options
           isEvalSupported: false,
-          disableAutoFetch: true,
+          disableAutoFetch: false, // Allow fetching required resources
           disableStream: true,
           useSystemFonts: false,
           // Additional error handling options
@@ -91,15 +103,25 @@ export default function PDFViewer({ file, onPageRangeSelect, onFormatSelect, cla
           disableFontFace: false,
           enableXfa: false,
           // Prevent any potential inline script generation
-          verbosity: 0, // Reduce console output that might use eval
+          verbosity: 1, // Enable some logging to debug resource loading
           maxImageSize: 16777216, // Limit image processing to prevent memory issues
           disableRange: true, // Disable range requests for security
           disableCreateObjectURL: false, // Keep object URLs for blob handling
+          // Add CORS settings
+          withCredentials: false,
+          // Enable debugging
+          isOffscreenCanvasSupported: true,
         });
         
         // Add progress handler
         loadingTask.onProgress = (progressData: any) => {
           console.log(`Loading PDF: ${progressData.loaded} / ${progressData.total} bytes`);
+        };
+        
+        // Add password handler (in case PDF is encrypted)
+        loadingTask.onPassword = (callback: any) => {
+          console.error('PDF is password protected');
+          setError('This PDF is password protected and cannot be processed.');
         };
         
         const loadedPdf = await loadingTask.promise;
