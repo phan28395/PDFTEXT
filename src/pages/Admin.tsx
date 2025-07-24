@@ -18,13 +18,12 @@ import {
 import SecurityMonitoring from '../components/admin/SecurityMonitoring';
 import UserManagement from '../components/admin/UserManagement';
 import SystemHealth from '../components/admin/SystemHealth';
-import AnalyticsDashboard from '../components/admin/AnalyticsDashboard';
 import ReportExports from '../components/admin/ReportExports';
 import SystemSettings from '../components/admin/SystemSettings';
 import AuditLogging from '../components/admin/AuditLogging';
 import ProcessingCleanup from '../components/admin/ProcessingCleanup';
 
-type AdminTab = 'overview' | 'users' | 'security' | 'analytics' | 'health' | 'exports' | 'settings' | 'audit' | 'cleanup';
+type AdminTab = 'overview' | 'users' | 'security' | 'health' | 'exports' | 'settings' | 'audit' | 'cleanup';
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
@@ -44,7 +43,6 @@ export default function Admin() {
     { id: 'overview' as AdminTab, name: 'Overview', icon: BarChart3 },
     { id: 'users' as AdminTab, name: 'User Management', icon: Users },
     { id: 'security' as AdminTab, name: 'Security', icon: Shield },
-    { id: 'analytics' as AdminTab, name: 'Analytics', icon: TrendingUp },
     { id: 'health' as AdminTab, name: 'System Health', icon: Activity },
     { id: 'audit' as AdminTab, name: 'Audit Logs', icon: FileText },
     { id: 'cleanup' as AdminTab, name: 'Data Cleanup', icon: Database },
@@ -60,8 +58,6 @@ export default function Admin() {
         return <UserManagement />;
       case 'security':
         return <SecurityMonitoring />;
-      case 'analytics':
-        return <AnalyticsDashboard />;
       case 'health':
         return <SystemHealth />;
       case 'audit':

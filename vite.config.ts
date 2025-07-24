@@ -38,7 +38,7 @@ export default defineConfig({
           // Split large pages into separate chunks
           admin: ['./src/pages/Admin.tsx'],
           batch: ['./src/pages/BatchProcessing.tsx', './src/components/BatchUpload.tsx'],
-          analytics: ['./src/components/UsageAnalytics.tsx', './src/components/admin/AnalyticsDashboard.tsx'],
+          analytics: ['./src/components/UsageAnalytics.tsx'],
         },
         chunkFileNames: (chunkInfo) => {
           const facadeModuleId = chunkInfo.facadeModuleId
