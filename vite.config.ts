@@ -21,10 +21,12 @@ export default defineConfig({
     },
   },
   // Configure assets to serve PDF.js worker with correct MIME type
-  assetsInclude: ['**/*.worker.js'],
+  assetsInclude: ['**/*.worker.js', '**/*.worker.mjs'],
   publicDir: 'public',
   // Ensure worker files are copied correctly
   copyPublicDir: true,
+  // Allow importing worker as raw text
+  assetsPlugin: [],
   build: {
     outDir: 'dist',
     sourcemap: process.env.NODE_ENV !== 'production',

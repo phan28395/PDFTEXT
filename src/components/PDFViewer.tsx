@@ -1,13 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw, Download, FileText, Settings } from 'lucide-react';
 import * as pdfjs from 'pdfjs-dist';
+import { setupPdfWorker } from '@/lib/pdfWorkerSetup';
 
-// Configure PDF.js with CDN worker to avoid local serving issues
+// Configure PDF.js with bundled worker to avoid CSP and loading issues
 if (typeof window !== 'undefined' && pdfjs.GlobalWorkerOptions) {
-  // Use CDN worker which is proven to work
-  pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
-  
-  console.log('PDF.js configured with CDN worker:', pdfjs.GlobalWorkerOptions.workerSrc);
+  const workerUrl = setupPdfWorker();
+  if (workerUrl) {
+    pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+    console.log('PDF.js configured with bundled blob worker');
+  } else {
+    console.error('Failed to setup PDF.js worker');
+  }
 }
 
 interface PDFViewerProps {
