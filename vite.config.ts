@@ -1,30 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
-import fs from 'fs'
-import path from 'path'
-
-// Plugin to copy PDF.js worker to public directory
-const copyPdfWorker = () => {
-  return {
-    name: 'copy-pdf-worker',
-    buildStart() {
-      // Copy the legacy worker (more compatible)
-      const workerPath = path.resolve(__dirname, 'node_modules/pdfjs-dist/legacy/build/pdf.worker.min.mjs');
-      const destPath = path.resolve(__dirname, 'public/pdf.worker.legacy.js');
-      
-      if (fs.existsSync(workerPath)) {
-        fs.copyFileSync(workerPath, destPath);
-        console.log('PDF.js legacy worker copied to public directory');
-      } else {
-        console.warn('PDF.js worker not found at:', workerPath);
-      }
-    }
-  };
-}
 
 export default defineConfig({
-  plugins: [react(), copyPdfWorker()],
+  plugins: [react()],
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),

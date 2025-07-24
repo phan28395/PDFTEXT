@@ -2,35 +2,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw, Download, FileText, Settings } from 'lucide-react';
 import * as pdfjs from 'pdfjs-dist';
 
-// Set up PDF.js worker with local files only (avoids CSP issues)
+// Set up PDF.js without worker to avoid module worker issues
 if (typeof window !== 'undefined') {
-  const setupWorker = () => {
-    const pdfjsVersion = pdfjs.version;
-    console.log(`Setting up PDF.js worker for version: ${pdfjsVersion}`);
-    
-    // Use local worker file to avoid CSP issues
-    // This file is served from the same domain as your app
-    const localWorkerPath = '/pdf-worker-bundle.js';
-    
-    // Set the worker source to our local bundle
-    pdfjs.GlobalWorkerOptions.workerSrc = localWorkerPath;
-    console.log(`Using local PDF.js worker: ${localWorkerPath}`);
-    
-    // Disable eval for security
-    pdfjs.GlobalWorkerOptions.isEvalSupported = false;
-    
-    // Additional options for better compatibility
-    pdfjs.GlobalWorkerOptions.workerPort = null;
-  };
+  // Disable the worker entirely to avoid module/classic worker conflicts
+  // PDF.js will run in the main thread - slightly slower but reliable
+  pdfjs.GlobalWorkerOptions.workerSrc = false;
   
-  // Initialize worker setup immediately
-  try {
-    setupWorker();
-  } catch (e) {
-    console.error('Failed to setup PDF.js worker:', e);
-    // Fallback to no worker (slower but functional)
-    pdfjs.GlobalWorkerOptions.workerSrc = undefined;
-  }
+  // Disable eval for security
+  pdfjs.GlobalWorkerOptions.isEvalSupported = false;
+  
+  console.log('PDF.js configured to run without worker (main thread mode)');
 }
 
 interface PDFViewerProps {
