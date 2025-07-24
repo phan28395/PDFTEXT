@@ -2,19 +2,20 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw, Download, FileText, Settings } from 'lucide-react';
 import * as pdfjs from 'pdfjs-dist';
 
-// Set up PDF.js without worker to avoid module worker issues
+// Set up PDF.js with local worker for CSP compliance
 if (typeof window !== 'undefined') {
   try {
-    // Disable the worker entirely to avoid module/classic worker conflicts
-    // PDF.js will run in the main thread - slightly slower but reliable
-    pdfjs.GlobalWorkerOptions.workerSrc = '';
+    // Use local worker file to avoid CSP issues
+    pdfjs.GlobalWorkerOptions.workerSrc = '/js/pdf.worker.min.js';
     
-    // Disable eval for security
+    // Disable eval for security and CSP compliance
     pdfjs.GlobalWorkerOptions.isEvalSupported = false;
     
-    console.log('PDF.js configured to run without worker (main thread mode)');
+    console.log('PDF.js configured with local worker for CSP compliance');
   } catch (error) {
     console.warn('Failed to configure PDF.js worker:', error);
+    // Fallback: disable worker entirely if local worker fails
+    pdfjs.GlobalWorkerOptions.workerSrc = '';
   }
 }
 
@@ -74,13 +75,13 @@ export default function PDFViewer({ file, onPageRangeSelect, onFormatSelect, cla
         // Convert file to array buffer
         const arrayBuffer = await file.arrayBuffer();
         
-        // Load PDF with additional options
+        // Load PDF with local resources for CSP compliance
         const loadingTask = pdfjs.getDocument({
           data: arrayBuffer,
-          cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`,
+          cMapUrl: '/cmaps/',
           cMapPacked: true,
-          standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/standard_fonts/`,
-          // Add options for better compatibility
+          standardFontDataUrl: '/standard_fonts/',
+          // Add options for better compatibility and CSP compliance
           isEvalSupported: false,
           disableAutoFetch: true,
           disableStream: true,

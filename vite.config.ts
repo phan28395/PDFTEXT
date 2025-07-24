@@ -20,6 +20,8 @@ export default defineConfig({
       allow: ['..'],
     },
   },
+  // Configure assets to serve PDF.js worker with correct MIME type
+  assetsInclude: ['**/*.worker.js'],
   build: {
     outDir: 'dist',
     sourcemap: process.env.NODE_ENV !== 'production',
@@ -82,7 +84,10 @@ export default defineConfig({
       'lucide-react',
       'pdfjs-dist',
     ],
-    exclude: ['pdfjs-dist/build/pdf.worker.min.js'],
+    exclude: [
+      'pdfjs-dist/build/pdf.worker.min.mjs',
+      'pdfjs-dist/build/pdf.worker.mjs'
+    ],
   },
   define: {
     // Ensure environment variables are available in the build
