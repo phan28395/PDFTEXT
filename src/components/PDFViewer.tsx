@@ -2,23 +2,25 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw, Download, FileText, Settings } from 'lucide-react';
 import * as pdfjs from 'pdfjs-dist';
 
-// Set up PDF.js - temporarily disable worker to debug constant requests
+// Import the worker as a URL
+// @ts-ignore
+import workerURL from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+
+// Set up PDF.js with proper worker configuration
 if (typeof window !== 'undefined' && typeof pdfjs !== 'undefined') {
   try {
     console.log('PDF.js version:', pdfjs.version);
+    console.log('Worker URL from import:', workerURL);
     
-    // TEMPORARY: Disable worker entirely to stop constant requests
-    pdfjs.GlobalWorkerOptions.workerSrc = '';
+    // Use the imported worker URL
+    pdfjs.GlobalWorkerOptions.workerSrc = workerURL;
     pdfjs.GlobalWorkerOptions.isEvalSupported = false;
     
-    console.warn('PDF.js worker DISABLED for debugging - running in main thread');
-    
-    // Alternative approach if worker is needed later:
-    // const workerPath = window.location.origin + '/js/pdf.worker.min.js';
-    // pdfjs.GlobalWorkerOptions.workerSrc = workerPath;
-    
+    console.log('PDF.js configured with worker:', pdfjs.GlobalWorkerOptions.workerSrc);
   } catch (error) {
     console.error('Failed to configure PDF.js:', error);
+    // Fallback to CDN worker if local import fails
+    pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
   }
 }
 

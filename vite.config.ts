@@ -92,6 +92,9 @@ export default defineConfig({
       'pdfjs-dist/build/pdf.worker.mjs'
     ],
   },
+  worker: {
+    format: 'es',
+  },
   define: {
     // Ensure environment variables are available in the build
     'process.env': {},
