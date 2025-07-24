@@ -1,7 +1,12 @@
 -- Database Migration for Pay-Per-Use Model with Free Trial
 -- Run these commands in your Supabase SQL editor
 
--- Add new columns to users table
+-- First, let's check and create the credit_balance column if it doesn't exist
+-- This handles both new and existing database schemas
+ALTER TABLE users 
+ADD COLUMN IF NOT EXISTS credit_balance INTEGER DEFAULT 0;
+
+-- Add other new columns to users table
 ALTER TABLE users 
 ADD COLUMN IF NOT EXISTS free_pages_remaining INTEGER DEFAULT 5,
 ADD COLUMN IF NOT EXISTS document_type TEXT CHECK (document_type IN ('standard', 'latex', 'forms'));
@@ -11,10 +16,12 @@ ALTER TABLE processing_history
 ADD COLUMN IF NOT EXISTS document_type TEXT DEFAULT 'standard' CHECK (document_type IN ('standard', 'latex', 'forms')),
 ADD COLUMN IF NOT EXISTS download_format TEXT DEFAULT 'combined' CHECK (download_format IN ('combined', 'separated', 'individual'));
 
--- Update existing users to have 5 free pages if they haven't used any yet
+-- Update existing users to have 5 free pages and default credit balance
 UPDATE users 
-SET free_pages_remaining = 5 
-WHERE pages_used = 0 AND free_pages_remaining IS NULL;
+SET 
+  free_pages_remaining = COALESCE(free_pages_remaining, 5),
+  credit_balance = COALESCE(credit_balance, 0)
+WHERE free_pages_remaining IS NULL OR credit_balance IS NULL;
 
 -- Create or update the can_user_process_pages function
 CREATE OR REPLACE FUNCTION can_user_process_pages(
