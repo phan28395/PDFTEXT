@@ -1,16 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw, Download, FileText, Settings } from 'lucide-react';
-// Use legacy build of PDF.js that works without workers
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
+import * as pdfjs from 'pdfjs-dist';
 
-// Configure PDF.js to run without worker
-const pdfjs = pdfjsLib;
-if (typeof window !== 'undefined') {
-  // Disable worker to prevent constant requests
-  pdfjs.GlobalWorkerOptions.workerSrc = null as any;
-  pdfjs.GlobalWorkerOptions.workerPort = null;
+// Configure PDF.js with CDN worker to avoid local serving issues
+if (typeof window !== 'undefined' && pdfjs.GlobalWorkerOptions) {
+  // Use CDN worker which is proven to work
+  pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
   
-  console.log('PDF.js configured in legacy mode (no worker)');
+  console.log('PDF.js configured with CDN worker:', pdfjs.GlobalWorkerOptions.workerSrc);
 }
 
 interface PDFViewerProps {
