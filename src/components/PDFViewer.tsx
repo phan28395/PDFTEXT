@@ -4,56 +4,80 @@ import * as pdfjs from 'pdfjs-dist';
 
 // Set up PDF.js worker with multiple fallback strategies
 if (typeof window !== 'undefined') {
+  // Detect if we need module worker or classic worker
+  const needsModuleWorker = typeof Worker !== 'undefined' && Worker.toString().includes('module');
+  
   const setupWorker = async () => {
     const pdfjsVersion = pdfjs.version;
     console.log(`Setting up PDF.js worker for version: ${pdfjsVersion}`);
+    console.log(`Worker type needed: ${needsModuleWorker ? 'module' : 'classic'}`);
     
-    // Strategy 1: Try local worker files first (if available in public directory)
-    const localWorkerUrls = ['/pdf-worker-loader.js', '/pdf.worker.min.js', '/pdf.worker.js'];
-    
-    for (const url of localWorkerUrls) {
-      try {
-        const response = await fetch(url, { method: 'HEAD' });
-        if (response.ok) {
-          pdfjs.GlobalWorkerOptions.workerSrc = url;
-          console.log(`Using local PDF.js worker: ${url}`);
-          return;
-        }
-      } catch (e) {
-        console.log(`Local worker ${url} not available`);
-      }
-    }
-    
-    // Strategy 2: Use CDN with exact version
+    // Strategy 1: Try CDN URLs that work with both module and classic workers
     const cdnUrls = [
-      `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/legacy/build/pdf.worker.min.mjs`,
+      `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsVersion}/pdf.worker.min.js`,
       `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.mjs`,
-      `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsVersion}/legacy/build/pdf.worker.min.mjs`,
-      `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsVersion}/pdf.worker.min.js`
+      `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.mjs`,
+      `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/legacy/build/pdf.worker.min.mjs`
     ];
     
-    // Try each CDN URL
+    // Try direct assignment first (works with most modern setups)
     for (const url of cdnUrls) {
       try {
+        // Test if the URL is accessible
         const response = await fetch(url, { method: 'HEAD' });
         if (response.ok) {
           pdfjs.GlobalWorkerOptions.workerSrc = url;
           console.log(`Using PDF.js worker from: ${url}`);
-          return;
+          
+          // Try to create a test worker to verify it works
+          try {
+            const testWorker = new Worker(url, needsModuleWorker ? { type: 'module' } : undefined);
+            testWorker.terminate();
+            console.log('Worker test successful');
+            return;
+          } catch (e) {
+            console.log(`Worker failed to initialize with ${url}, trying next...`);
+          }
         }
       } catch (e) {
         console.log(`Failed to reach: ${url}`);
       }
     }
     
-    // Strategy 3: Try to create worker inline (last resort)
+    // Strategy 2: Create a blob worker that properly imports the PDF.js worker
     try {
-      const workerBlob = new Blob([`importScripts('${cdnUrls[0]}')`], { type: 'application/javascript' });
+      // For module workers, we need to use dynamic import
+      let workerCode;
+      if (needsModuleWorker) {
+        workerCode = `
+          // Module worker - use dynamic import
+          const workerUrl = '${cdnUrls[0]}';
+          import(workerUrl).then(() => {
+            console.log('PDF.js worker module loaded');
+          }).catch(e => {
+            console.error('Failed to load PDF.js worker module:', e);
+          });
+        `;
+      } else {
+        // Classic worker - use importScripts
+        workerCode = `
+          // Classic worker - use importScripts
+          try {
+            importScripts('${cdnUrls[0]}');
+            console.log('PDF.js worker loaded via importScripts');
+          } catch (e) {
+            console.error('Failed to load PDF.js worker:', e);
+          }
+        `;
+      }
+      
+      const workerBlob = new Blob([workerCode], { type: 'application/javascript' });
       const workerUrl = URL.createObjectURL(workerBlob);
       pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
-      console.log('Using inline worker with CDN import');
+      console.log(`Using blob worker (${needsModuleWorker ? 'module' : 'classic'} mode)`);
     } catch (e) {
-      console.error('Failed to create inline worker:', e);
+      console.error('Failed to create blob worker:', e);
+      
       // Final fallback - disable worker (will be slower but functional)
       pdfjs.GlobalWorkerOptions.workerSrc = undefined;
       console.warn('PDF.js running without worker - performance may be impacted');
