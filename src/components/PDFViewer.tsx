@@ -4,14 +4,18 @@ import * as pdfjs from 'pdfjs-dist';
 
 // Set up PDF.js without worker to avoid module worker issues
 if (typeof window !== 'undefined') {
-  // Disable the worker entirely to avoid module/classic worker conflicts
-  // PDF.js will run in the main thread - slightly slower but reliable
-  pdfjs.GlobalWorkerOptions.workerSrc = false;
-  
-  // Disable eval for security
-  pdfjs.GlobalWorkerOptions.isEvalSupported = false;
-  
-  console.log('PDF.js configured to run without worker (main thread mode)');
+  try {
+    // Disable the worker entirely to avoid module/classic worker conflicts
+    // PDF.js will run in the main thread - slightly slower but reliable
+    pdfjs.GlobalWorkerOptions.workerSrc = '';
+    
+    // Disable eval for security
+    pdfjs.GlobalWorkerOptions.isEvalSupported = false;
+    
+    console.log('PDF.js configured to run without worker (main thread mode)');
+  } catch (error) {
+    console.warn('Failed to configure PDF.js worker:', error);
+  }
 }
 
 interface PDFViewerProps {
