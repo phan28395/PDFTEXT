@@ -6,14 +6,11 @@ import {
   Calendar,
   AlertCircle,
   Crown,
-  Plus,
-  Download,
-  Eye
+  Plus
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useUser } from '@/hooks/useDatabase';
-import { useRecentProcessing, useProcessingStats } from '@/hooks/useProcessing';
 import { DashboardLayout } from '@/components/Layout';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import FileUpload from '@/components/FileUpload';
@@ -21,53 +18,13 @@ import FileUpload from '@/components/FileUpload';
 export default function Dashboard() {
   const { user } = useAuth();
   const { user: userData, loading: userLoading } = useUser(user?.id);
-  const { recentRecords, loading: historyLoading } = useRecentProcessing();
-  const { stats, loading: statsLoading } = useProcessingStats();
 
   // Calculate usage statistics - pay per use model with free trial
-  const pagesUsed = userData?.pages_used || 0;
   const creditBalance = userData?.credit_balance || 0; // Credits in cents
   const freePages = userData?.free_pages_remaining || 5; // Default 5 free pages
   const costPerPage = 1.2; // 1.2 cents per page ($0.012)
   const hasCredits = creditBalance >= costPerPage || freePages > 0;
   const isTrialUser = freePages > 0;
-  const totalAvailablePages = Math.floor(creditBalance / costPerPage) + freePages;
-  
-  // Credit balance color based on remaining credits
-  const getCreditColor = () => {
-    if (creditBalance < 100) return 'text-red-600 bg-red-50 border-red-200'; // Less than $1
-    if (creditBalance < 500) return 'text-yellow-600 bg-yellow-50 border-yellow-200'; // Less than $5
-    return 'text-green-600 bg-green-50 border-green-200';
-  };
-
-
-  // Quick actions
-  const quickActions = [
-    {
-      title: 'Upload New PDF',
-      description: 'Convert your PDF to text',
-      icon: Upload,
-      href: '/batch',
-      color: 'bg-blue-600 hover:bg-blue-700',
-      available: hasCredits
-    },
-    {
-      title: 'View History',
-      description: 'See all processed files',
-      icon: FileText,
-      href: '/usage-history',
-      color: 'bg-gray-600 hover:bg-gray-700',
-      available: true
-    },
-    {
-      title: 'Add Credits',
-      description: 'Top up your account',
-      icon: Crown,
-      href: '/account-settings',
-      color: 'bg-green-600 hover:bg-green-700',
-      available: true
-    }
-  ];
 
   return (
     <DashboardLayout>
@@ -275,248 +232,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {quickActions.map((action, index) => {
-              const Icon = action.icon;
-              const isDisabled = !action.available;
-              
-              return (
-                <Link
-                  key={index}
-                  to={action.href}
-                  className={`
-                    p-4 rounded-lg border-2 border-dashed transition-all duration-200
-                    ${isDisabled 
-                      ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-50' 
-                      : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'
-                    }
-                  `}
-                  onClick={(e) => isDisabled && e.preventDefault()}
-                >
-                  <div className="text-center">
-                    <Icon className={`h-8 w-8 mx-auto ${isDisabled ? 'text-gray-400' : 'text-blue-600'}`} />
-                    <h3 className={`mt-2 font-medium ${isDisabled ? 'text-gray-400' : 'text-gray-900'}`}>
-                      {action.title}
-                    </h3>
-                    <p className={`text-sm mt-1 ${isDisabled ? 'text-gray-400' : 'text-gray-600'}`}>
-                      {action.description}
-                    </p>
-                    {isDisabled && action.title === 'Upload New PDF' && (
-                      <p className="text-xs text-red-600 mt-2">Insufficient credits</p>
-                    )}
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
 
-        {/* Two-column layout for billing and processing info */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Pricing & Credits */}
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              {isTrialUser ? 'Free Trial + Pay-Per-Use' : 'Pay-Per-Use Billing'}
-            </h2>
-            <div className="space-y-4">
-              {isTrialUser && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-green-800">Free trial pages</span>
-                    <span className="text-sm font-bold text-green-800">{freePages} remaining</span>
-                  </div>
-                  <p className="text-xs text-green-600 mt-1">No credit card required!</p>
-                </div>
-              )}
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Cost per page</span>
-                <span className="text-sm font-medium text-gray-900">$0.012</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Credit balance</span>
-                <span className="text-sm font-medium text-green-600">
-                  ${(creditBalance / 100).toFixed(2)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Total pages available</span>
-                <span className="text-sm font-medium text-gray-900">
-                  {totalAvailablePages} pages
-                </span>
-              </div>
-              <div className="pt-4 border-t">
-                <Link
-                  to="/account-settings"
-                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium text-center block"
-                >
-                  {isTrialUser ? 'Add Credits for More Pages' : 'Add Credits'}
-                </Link>
-              </div>
-            </div>
-          </div>
 
-          {/* Processing Performance */}
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Processing Performance</h2>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Average Processing Speed</span>
-                <span className="text-sm font-medium text-gray-900">
-                  {statsLoading ? '...' : '3.2'} seconds/page
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Success Rate</span>
-                <span className="text-sm font-medium text-green-600">
-                  {statsLoading ? '...' : '99.5'}%
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Supported Formats</span>
-                <span className="text-sm font-medium text-gray-900">PDF, JPG, PNG, TIFF</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Output Formats</span>
-                <span className="text-sm font-medium text-gray-900">TXT, DOCX, JSON, CSV</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Recent Processing Activity */}
-        <div className="bg-white rounded-lg shadow-sm border">
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">Recent Processing</h2>
-              <Link
-                to="/usage-history"
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-              >
-                View all
-              </Link>
-            </div>
-          </div>
-          
-          <div className="p-6">
-            {historyLoading ? (
-              <div className="space-y-4">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="animate-pulse flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
-                    <div className="flex-1">
-                      <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
-                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : recentRecords && recentRecords.length > 0 ? (
-              <div className="space-y-4">
-                {recentRecords.map((record) => (
-                  <div key={record.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <FileText className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900 truncate max-w-xs">
-                          {record.filename}
-                        </p>
-                        <div className="flex items-center space-x-4 text-sm text-gray-500">
-                          <span className="flex items-center">
-                            <Clock className="h-3 w-3 mr-1" />
-                            {new Date(record.created_at).toLocaleDateString()}
-                          </span>
-                          <span>{record.pages_processed} pages</span>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            record.status === 'completed' 
-                              ? 'bg-green-100 text-green-800' 
-                              : record.status === 'failed'
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {record.status}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    {record.status === 'completed' && record.text_content && (
-                      <div className="flex items-center space-x-2">
-                        <Link
-                          to={`/usage-history?recordId=${record.id}`}
-                          className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
-                          title="View details"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Link>
-                        <button 
-                          onClick={() => {
-                            const blob = new Blob([record.text_content!], { type: 'text/plain' });
-                            const url = URL.createObjectURL(blob);
-                            const link = document.createElement('a');
-                            link.href = url;
-                            link.download = record.filename.replace('.pdf', '.txt');
-                            link.click();
-                            URL.revokeObjectURL(url);
-                          }}
-                          className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
-                          title="Download text"
-                        >
-                          <Download className="h-4 w-4" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <FileText className="h-16 w-16 text-gray-300 mx-auto" />
-                <h3 className="text-lg font-medium text-gray-900 mt-4">No documents processed yet</h3>
-                <p className="text-gray-500 mt-2">
-                  Upload your first PDF to start converting documents to text at $0.012 per page
-                </p>
-                {hasCredits && (
-                  <div className="mt-6 text-center">
-                    <div className="inline-flex items-center px-4 py-2 bg-blue-50 text-blue-700 rounded-lg mb-4">
-                      <Clock className="h-4 w-4 mr-2" />
-                      Average processing time: 3.2 seconds per page
-                    </div>
-                    <div>
-                      <Link
-                        to="/batch"
-                        className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                      >
-                        <Upload className="h-4 w-4 mr-2" />
-                        Upload PDF
-                      </Link>
-                    </div>
-                  </div>
-                )}
-                {!hasCredits && (
-                  <div className="mt-6 text-center">
-                    <div className="inline-flex items-center px-4 py-2 bg-red-50 text-red-700 rounded-lg mb-4">
-                      <AlertCircle className="h-4 w-4 mr-2" />
-                      Add credits to start processing documents
-                    </div>
-                    <div>
-                      <Link
-                        to="/account-settings"
-                        className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                      >
-                        <Crown className="h-4 w-4 mr-2" />
-                        Add Credits
-                      </Link>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
         </div>
       </ErrorBoundary>
     </DashboardLayout>
