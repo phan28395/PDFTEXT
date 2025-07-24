@@ -11,13 +11,12 @@ import {
   Download
 } from 'lucide-react';
 import UserProfile from '@/components/UserProfile';
-import SubscriptionManagement from '@/components/SubscriptionManagement';
 import BillingHistory from '@/components/BillingHistory';
 import UsageStatsDashboard from '@/components/UsageStatsDashboard';
 import CustomerSupport from '@/components/CustomerSupport';
 import PrivacySettings from '@/components/PrivacySettings';
 
-type SettingsTab = 'profile' | 'subscription' | 'billing' | 'usage' | 'support' | 'privacy' | 'notifications';
+type SettingsTab = 'profile' | 'billing' | 'usage' | 'support' | 'privacy' | 'notifications';
 
 interface TabConfig {
   id: SettingsTab;
@@ -32,12 +31,6 @@ const SETTINGS_TABS: TabConfig[] = [
     name: 'Profile',
     icon: User,
     description: 'Personal information and account details'
-  },
-  {
-    id: 'subscription',
-    name: 'Subscription',
-    icon: CreditCard,
-    description: 'Manage your plan and billing'
   },
   {
     id: 'billing',
@@ -273,8 +266,6 @@ export const AccountSettings: React.FC = () => {
     switch (activeTab) {
       case 'profile':
         return <UserProfile />;
-      case 'subscription':
-        return <SubscriptionManagement />;
       case 'billing':
         return <BillingHistory />;
       case 'usage':
