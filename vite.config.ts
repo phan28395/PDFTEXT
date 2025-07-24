@@ -76,7 +76,9 @@ export default defineConfig({
       'react-router-dom',
       '@supabase/supabase-js',
       'lucide-react',
+      'pdfjs-dist',
     ],
+    exclude: ['pdfjs-dist/build/pdf.worker.min.js'],
   },
   define: {
     // Ensure environment variables are available in the build

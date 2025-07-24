@@ -2,19 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw, Download, FileText, Settings } from 'lucide-react';
 import * as pdfjs from 'pdfjs-dist';
 
-// Set up PDF.js worker with multiple fallbacks
+// Set up PDF.js worker - use CDN directly for production reliability
 if (typeof window !== 'undefined') {
-  // Try to use the bundled worker first
-  try {
-    pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-      'pdfjs-dist/build/pdf.worker.min.js',
-      import.meta.url
-    ).toString();
-  } catch (error) {
-    console.warn('Failed to use bundled worker, trying CDN fallback...');
-    // Fallback to CDN
-    pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
-  }
+  // Use CDN for the worker to ensure it loads correctly in production
+  pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+  
+  // Enable worker error handling
+  pdfjs.GlobalWorkerOptions.workerPort = null;
 }
 
 interface PDFViewerProps {
@@ -79,6 +73,10 @@ export default function PDFViewer({ file, onPageRangeSelect, onFormatSelect, cla
           cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`,
           cMapPacked: true,
           standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/standard_fonts/`,
+          // Add options for better compatibility
+          isEvalSupported: false,
+          disableAutoFetch: true,
+          disableStream: true,
         });
         
         const loadedPdf = await loadingTask.promise;
