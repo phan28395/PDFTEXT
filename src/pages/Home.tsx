@@ -235,14 +235,83 @@ Time: 2:00 PM EST`,
               </Link>
             </div>
 
-            {/* Trust Indicators */}
-            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3 max-w-2xl mx-auto">
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="text-lg md:text-xl font-bold text-blue-600">{stat.value}</div>
-                  <div className="text-xs text-gray-600">{stat.label}</div>
+            {/* Feature Support Grid */}
+            <div className="mt-4 max-w-4xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                {/* Document Types */}
+                <div className="bg-white/50 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900 mb-3 text-center">Document Types</h3>
+                  <div className="space-y-2">
+                    <div className="flex items-center">
+                      <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                      <span className="text-gray-700">Research Papers with LaTeX</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                      <span className="text-gray-700">Handwritten with LaTeX</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                      <span className="text-gray-700">Financial Documents</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                      <span className="text-gray-700">Medical Documents</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                      <span className="text-gray-700">Legal Documents</span>
+                    </div>
+                  </div>
                 </div>
-              ))}
+
+                {/* Input Formats */}
+                <div className="bg-white/50 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900 mb-3 text-center">Input Formats</h3>
+                  <div className="space-y-2">
+                    <div className="flex items-center">
+                      <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                      <span className="text-gray-700">PDF</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                      <span className="text-gray-700">Images (JPG, PNG)</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                      <span className="text-gray-700">TIFF</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Output Formats */}
+                <div className="bg-white/50 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900 mb-3 text-center">Output Formats</h3>
+                  <div className="space-y-2">
+                    <div className="flex items-center">
+                      <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                      <span className="text-gray-700">TXT</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                      <span className="text-gray-700">DOCX</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                      <span className="text-gray-700">CSV</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                      <span className="text-gray-700">JSON</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Batch Upload Support */}
+              <div className="mt-4 text-sm text-gray-600 text-center">
+                Process multiple files at once with batch upload support
+              </div>
             </div>
           </div>
         </div>
