@@ -5,6 +5,7 @@ import { processPDF, validateFile as apiValidateFile, ProcessingResult, Processi
 import CloudStoragePicker from './CloudStoragePicker';
 import DocumentTypeSelector, { DocumentType } from './DocumentTypeSelector';
 import PDFViewer, { OutputFormat } from './PDFViewer';
+import SimplePDFViewer from './SimplePDFViewer';
 import { useAuth } from '@/hooks/useAuth';
 import { useUser } from '@/hooks/useDatabase';
 
@@ -44,6 +45,7 @@ export default function FileUpload({
   
   // PDF viewer state
   const [showPDFViewer, setShowPDFViewer] = useState(false);
+  const [useSimplePDFViewer, setUseSimplePDFViewer] = useState(false);
   const [selectedPageRange, setSelectedPageRange] = useState<{start: number, end: number, total: number} | null>(null);
   const [selectedOutputFormat, setSelectedOutputFormat] = useState<OutputFormat>({
     type: 'text',
@@ -186,6 +188,7 @@ export default function FileUpload({
     
     // Reset PDF viewer state
     setShowPDFViewer(false);
+    setUseSimplePDFViewer(false);
     setSelectedPageRange(null);
     setSelectedOutputFormat({
       type: 'text',
@@ -431,12 +434,31 @@ export default function FileUpload({
             {/* PDF Viewer */}
             {showPDFViewer && selectedFile && selectedFile.type === 'application/pdf' && (
               <div className="mt-4">
-                <PDFViewer
-                  file={selectedFile}
-                  onPageRangeSelect={handlePageRangeSelect}
-                  onFormatSelect={handleFormatSelect}
-                  className="border rounded-lg"
-                />
+                {useSimplePDFViewer ? (
+                  <SimplePDFViewer
+                    file={selectedFile}
+                    onPageRangeSelect={handlePageRangeSelect}
+                    onFormatSelect={handleFormatSelect}
+                    className="border rounded-lg"
+                  />
+                ) : (
+                  <div className="space-y-3">
+                    <PDFViewer
+                      file={selectedFile}
+                      onPageRangeSelect={handlePageRangeSelect}
+                      onFormatSelect={handleFormatSelect}
+                      className="border rounded-lg"
+                    />
+                    <div className="text-center">
+                      <button
+                        onClick={() => setUseSimplePDFViewer(true)}
+                        className="text-sm text-blue-600 hover:text-blue-700 underline"
+                      >
+                        Having trouble viewing the PDF? Try the simplified viewer
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

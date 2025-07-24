@@ -2,8 +2,20 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw, Download, FileText, Settings } from 'lucide-react';
 import * as pdfjs from 'pdfjs-dist';
 
-// Set up PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+// Set up PDF.js worker with multiple fallbacks
+if (typeof window !== 'undefined') {
+  // Try to use the bundled worker first
+  try {
+    pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+      'pdfjs-dist/build/pdf.worker.min.js',
+      import.meta.url
+    ).toString();
+  } catch (error) {
+    console.warn('Failed to use bundled worker, trying CDN fallback...');
+    // Fallback to CDN
+    pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+  }
+}
 
 interface PDFViewerProps {
   file: File;
@@ -53,8 +65,28 @@ export default function PDFViewer({ file, onPageRangeSelect, onFormatSelect, cla
         setIsLoading(true);
         setError(null);
         
+        // Validate file type
+        if (!file.type.includes('pdf')) {
+          throw new Error('File is not a valid PDF');
+        }
+        
+        // Convert file to array buffer
         const arrayBuffer = await file.arrayBuffer();
-        const loadedPdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+        
+        // Load PDF with additional options
+        const loadingTask = pdfjs.getDocument({
+          data: arrayBuffer,
+          cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`,
+          cMapPacked: true,
+          standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/standard_fonts/`,
+        });
+        
+        const loadedPdf = await loadingTask.promise;
+        
+        // Validate the PDF was loaded successfully
+        if (!loadedPdf || loadedPdf.numPages === 0) {
+          throw new Error('PDF appears to be empty or corrupted');
+        }
         
         setPdf(loadedPdf);
         setTotalPages(loadedPdf.numPages);
@@ -64,9 +96,23 @@ export default function PDFViewer({ file, onPageRangeSelect, onFormatSelect, cla
         
         // Notify parent about initial range
         onPageRangeSelect?.(1, loadedPdf.numPages, loadedPdf.numPages);
-      } catch (err) {
+        
+        console.log(`PDF loaded successfully: ${loadedPdf.numPages} pages`);
+      } catch (err: any) {
         console.error('Error loading PDF:', err);
-        setError('Failed to load PDF. Please try again.');
+        let errorMessage = 'Failed to load PDF. Please try again.';
+        
+        if (err.name === 'InvalidPDFException') {
+          errorMessage = 'Invalid PDF file. Please check the file and try again.';
+        } else if (err.name === 'MissingPDFException') {
+          errorMessage = 'PDF file appears to be corrupted or empty.';
+        } else if (err.name === 'UnexpectedResponseException') {
+          errorMessage = 'Unable to load PDF. Please check your internet connection.';
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+        
+        setError(errorMessage);
       } finally {
         setIsLoading(false);
       }
@@ -85,19 +131,32 @@ export default function PDFViewer({ file, onPageRangeSelect, onFormatSelect, cla
         const canvas = canvasRef.current!;
         const context = canvas.getContext('2d')!;
         
+        // Clear previous content
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        
         const viewport = page.getViewport({ scale, rotation });
         canvas.height = viewport.height;
         canvas.width = viewport.width;
+        
+        // Set canvas style for better appearance
+        canvas.style.maxWidth = '100%';
+        canvas.style.height = 'auto';
         
         const renderContext = {
           canvasContext: context,
           viewport: viewport,
         };
         
-        await page.render(renderContext).promise;
-      } catch (err) {
+        // Cancel any previous render task
+        const renderTask = page.render(renderContext);
+        await renderTask.promise;
+        
+        console.log(`Page ${currentPage} rendered successfully`);
+      } catch (err: any) {
         console.error('Error rendering page:', err);
-        setError('Failed to render page.');
+        if (err.name !== 'RenderingCancelledException') {
+          setError(`Failed to render page ${currentPage}. ${err.message || ''}`);
+        }
       }
     };
 
