@@ -2,31 +2,23 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw, Download, FileText, Settings } from 'lucide-react';
 import * as pdfjs from 'pdfjs-dist';
 
-// Set up PDF.js with local worker for CSP compliance
+// Set up PDF.js - temporarily disable worker to debug constant requests
 if (typeof window !== 'undefined' && typeof pdfjs !== 'undefined') {
   try {
-    // Set worker source before any PDF.js operations
-    // Using string concatenation to avoid any URL parsing issues
-    const workerPath = window.location.origin + '/js/pdf.worker.min.js';
+    console.log('PDF.js version:', pdfjs.version);
     
-    // Clear any existing worker configuration
-    if (pdfjs.GlobalWorkerOptions) {
-      pdfjs.GlobalWorkerOptions.workerSrc = workerPath;
-      pdfjs.GlobalWorkerOptions.isEvalSupported = false;
-      pdfjs.GlobalWorkerOptions.workerPort = null;
-    }
+    // TEMPORARY: Disable worker entirely to stop constant requests
+    pdfjs.GlobalWorkerOptions.workerSrc = '';
+    pdfjs.GlobalWorkerOptions.isEvalSupported = false;
     
-    console.log('PDF.js worker configuration:', {
-      workerSrc: pdfjs.GlobalWorkerOptions.workerSrc,
-      origin: window.location.origin,
-      fullPath: workerPath
-    });
+    console.warn('PDF.js worker DISABLED for debugging - running in main thread');
+    
+    // Alternative approach if worker is needed later:
+    // const workerPath = window.location.origin + '/js/pdf.worker.min.js';
+    // pdfjs.GlobalWorkerOptions.workerSrc = workerPath;
+    
   } catch (error) {
-    console.error('Failed to configure PDF.js worker:', error);
-    // Try to disable worker as fallback
-    if (pdfjs.GlobalWorkerOptions) {
-      pdfjs.GlobalWorkerOptions.workerSrc = '';
-    }
+    console.error('Failed to configure PDF.js:', error);
   }
 }
 

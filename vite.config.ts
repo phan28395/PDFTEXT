@@ -22,6 +22,9 @@ export default defineConfig({
   },
   // Configure assets to serve PDF.js worker with correct MIME type
   assetsInclude: ['**/*.worker.js'],
+  publicDir: 'public',
+  // Ensure worker files are copied correctly
+  copyPublicDir: true,
   build: {
     outDir: 'dist',
     sourcemap: process.env.NODE_ENV !== 'production',
