@@ -83,27 +83,6 @@ export default function Dashboard() {
               }
             </p>
           </div>
-          <div className="mt-4 sm:mt-0">
-            {hasCredits ? (
-              <Link
-                to="/batch"
-                className="bg-blue-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center text-sm sm:text-base"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Upload PDF</span>
-                <span className="sm:hidden">Upload</span>
-              </Link>
-            ) : (
-              <Link
-                to="/account-settings"
-                className="bg-green-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-green-700 transition-colors inline-flex items-center text-sm sm:text-base"
-              >
-                <Crown className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Add Credits</span>
-                <span className="sm:hidden">Add Credits</span>
-              </Link>
-            )}
-          </div>
         </div>
 
         {/* Free Trial or Credit Balance Alert */}
@@ -189,60 +168,8 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Pages Processed */}
-          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border">
-            <div className="flex items-center">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600">Pages Processed</p>
-                <p className="text-xl sm:text-2xl font-bold text-gray-900">
-                  {userLoading ? '...' : pagesUsed}
-                </p>
-                <p className="text-sm text-green-600 mt-1">
-                  Total lifetime pages
-                </p>
-              </div>
-              <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
-            </div>
-          </div>
 
-          {/* Files Processed */}
-          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border">
-            <div className="flex items-center">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600">Files Processed</p>
-                <p className="text-xl sm:text-2xl font-bold text-gray-900">
-                  {statsLoading ? '...' : stats?.totalFiles || 0}
-                </p>
-                <p className="text-sm text-gray-500">All time</p>
-              </div>
-              <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
-            </div>
-          </div>
 
-          {/* Account Age */}
-          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border">
-            <div className="flex items-center">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600">Member Since</p>
-                <p className="text-xl sm:text-2xl font-bold text-gray-900">
-                  {userLoading ? '...' : 
-                    userData?.created_at ? 
-                    new Date(userData.created_at).toLocaleDateString('en-US', { 
-                      month: 'short', 
-                      year: 'numeric' 
-                    }) : 'Recent'
-                  }
-                </p>
-                <p className="text-sm text-gray-500">
-                  {userData?.created_at ? 
-                    Math.floor((Date.now() - new Date(userData.created_at).getTime()) / (1000 * 60 * 60 * 24)) + ' days'
-                    : 'New user'
-                  }
-                </p>
-              </div>
-              <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
-            </div>
-          </div>
         </div>
 
 

@@ -26,7 +26,6 @@ export default function Sidebar({ className = '', isOpen = true, onClose }: Side
     { name: 'Upload PDF', href: '/upload', icon: Upload },
     { name: 'History', href: '/history', icon: History },
     { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-    { name: 'Subscription', href: '/subscription', icon: CreditCard },
     { name: 'Settings', href: '/settings', icon: Settings },
     { name: 'Help', href: '/help', icon: HelpCircle },
   ];
@@ -114,29 +113,6 @@ export default function Sidebar({ className = '', isOpen = true, onClose }: Side
             })}
           </nav>
 
-          {/* Usage Summary */}
-          <div className="p-4 border-t border-gray-200">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-2">
-                Monthly Usage
-              </h4>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Pages processed</span>
-                  <span className="text-gray-900">0 / 10</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-blue-600 h-2 rounded-full w-0"></div>
-                </div>
-                <Link
-                  to="/subscription"
-                  className="text-xs text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  Upgrade for unlimited processing →
-                </Link>
-              </div>
-            </div>
-          </div>
         </div>
       </aside>
     </>
