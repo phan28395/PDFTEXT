@@ -91,6 +91,9 @@ export default async function handler(req, res) {
     const documentType = fields.documentType?.[0] || 'standard';
     const downloadFormat = fields.downloadFormat?.[0] || 'combined';
     const processIndividually = fields.processIndividually?.[0] === 'true';
+    const outputFormat = fields.outputFormat?.[0] || 'text';
+    const startPage = parseInt(fields.startPage?.[0]) || 1;
+    const endPage = parseInt(fields.endPage?.[0]) || null;
     const authHeader = req.headers.authorization;
     
     if (!authHeader) {
@@ -139,21 +142,46 @@ export default async function handler(req, res) {
     let totalPages = 0;
     let totalConfidence = 0;
     
+    // First, get total page count to validate range
+    let documentPageCount = 0;
+    try {
+      const countRequest = {
+        name: processorName,
+        rawDocument: {
+          content: fileBuffer.toString('base64'),
+          mimeType: 'application/pdf',
+        },
+      };
+      const [countResult] = await client.processDocument(countRequest);
+      documentPageCount = countResult.document.pages ? countResult.document.pages.length : 1;
+    } catch (error) {
+      console.error('Error getting page count:', error);
+      documentPageCount = 1; // Default fallback
+    }
+    
+    // Validate and adjust page range
+    const actualEndPage = endPage || documentPageCount;
+    const validStartPage = Math.max(1, Math.min(startPage, documentPageCount));
+    const validEndPage = Math.max(validStartPage, Math.min(actualEndPage, documentPageCount));
+    const pagesToProcess = validEndPage - validStartPage + 1;
+    
     if (processIndividually) {
-      // Process pages individually
+      // Process pages individually with page range support
       const processedData = await processDocumentIndividually(
         fileBuffer, 
         processorName, 
         client, 
-        documentType
+        documentType,
+        validStartPage,
+        validEndPage
       );
       
       processedPages = processedData.pages;
       totalText = processedData.combinedText;
-      totalPages = processedData.pageCount;
+      totalPages = pagesToProcess;
       totalConfidence = processedData.averageConfidence;
     } else {
-      // Process entire document at once (legacy mode)
+      // Process entire document at once, then filter pages
       const request = {
         name: processorName,
         rawDocument: {
@@ -164,11 +192,24 @@ export default async function handler(req, res) {
       
       const [result] = await client.processDocument(request);
       const document = result.document;
-      totalText = document.text || '';
-      totalPages = document.pages ? document.pages.length : 1;
-      totalConfidence = document.pages?.[0]?.detectedLanguages?.[0]?.confidence || 0.95;
       
-      processedPages = [{ pageNumber: 1, text: totalText, confidence: totalConfidence }];
+      // Filter pages based on range
+      if (document.pages && validStartPage !== 1 || validEndPage !== documentPageCount) {
+        const selectedPages = document.pages.slice(validStartPage - 1, validEndPage);
+        totalText = selectedPages.map(page => page.paragraphs?.map(p => p.layout?.textAnchor?.content || '').join('\n') || '').join('\n\n');
+        totalPages = pagesToProcess;
+        totalConfidence = selectedPages[0]?.detectedLanguages?.[0]?.confidence || 0.95;
+        processedPages = selectedPages.map((page, index) => ({
+          pageNumber: validStartPage + index,
+          text: page.paragraphs?.map(p => p.layout?.textAnchor?.content || '').join('\n') || '',
+          confidence: page.detectedLanguages?.[0]?.confidence || 0.95
+        }));
+      } else {
+        totalText = document.text || '';
+        totalPages = pagesToProcess;
+        totalConfidence = document.pages?.[0]?.detectedLanguages?.[0]?.confidence || 0.95;
+        processedPages = [{ pageNumber: 1, text: totalText, confidence: totalConfidence }];
+      }
     }
     
     const processingTime = Date.now() - startTime;
@@ -229,11 +270,15 @@ export default async function handler(req, res) {
       downloadUrls = await generateMultipleDownloads(processedPages, downloadFormat, recordId);
     }
     
+    // Convert text to requested output format
+    const convertedContent = await convertTextToFormat(totalText, outputFormat, processedPages);
+    
     // Update processing record as completed
     await supabase
       .from('processing_history')
       .update({
         pages_processed: totalPages,
+        output_format: outputFormat,
         processing_status: 'completed',
         processing_time_ms: processingTime,
         completed_at: new Date().toISOString(),
@@ -259,7 +304,9 @@ export default async function handler(req, res) {
       data: {
         recordId: recordId,
         filename: file.originalFilename || 'document.pdf',
-        text: totalText,
+        text: convertedContent.content,
+        originalText: totalText,
+        outputFormat: outputFormat,
         pages: totalPages,
         confidence: totalConfidence,
         processingTime: processingTime,
@@ -301,7 +348,7 @@ export default async function handler(req, res) {
 /**
  * Process document pages individually using Google Document AI
  */
-async function processDocumentIndividually(fileBuffer, processorName, client, documentType) {
+async function processDocumentIndividually(fileBuffer, processorName, client, documentType, startPage = 1, endPage = null) {
   try {
     // For now, we'll process the entire document and simulate individual processing
     // In a full implementation, you would split the PDF into individual pages first
@@ -327,13 +374,18 @@ async function processDocumentIndividually(fileBuffer, processorName, client, do
       };
     }
     
-    // Process each page's content
+    // Process each page's content within the specified range
     const processedPages = [];
     let combinedText = '';
     let totalConfidence = 0;
     
-    for (let i = 0; i < document.pages.length; i++) {
+    const actualEndPage = endPage || document.pages.length;
+    const pageStart = Math.max(0, startPage - 1); // Convert to 0-based index
+    const pageEnd = Math.min(document.pages.length, actualEndPage);
+    
+    for (let i = pageStart; i < pageEnd; i++) {
       const page = document.pages[i];
+      const pageNumber = i + 1; // Convert back to 1-based for display
       
       // Extract text for this page
       let pageText = '';
@@ -362,7 +414,7 @@ async function processDocumentIndividually(fileBuffer, processorName, client, do
       const confidence = page.detectedLanguages?.[0]?.confidence || 0.95;
       
       processedPages.push({
-        pageNumber: i + 1,
+        pageNumber: pageNumber,
         text: pageText.trim(),
         confidence: confidence
       });
@@ -371,11 +423,12 @@ async function processDocumentIndividually(fileBuffer, processorName, client, do
       totalConfidence += confidence;
     }
     
+    const actualProcessedCount = pageEnd - pageStart;
     return {
       pages: processedPages,
       combinedText: combinedText.trim(),
-      pageCount: document.pages.length,
-      averageConfidence: totalConfidence / document.pages.length
+      pageCount: actualProcessedCount,
+      averageConfidence: actualProcessedCount > 0 ? totalConfidence / actualProcessedCount : 0
     };
     
   } catch (error) {
@@ -476,4 +529,182 @@ async function generateMultipleDownloads(processedPages, downloadFormat, recordI
     console.error('Error generating downloads:', error);
     return [];
   }
+}
+
+/**
+ * Convert text content to different output formats
+ */
+async function convertTextToFormat(text, outputFormat, processedPages) {
+  try {
+    switch (outputFormat) {
+      case 'text':
+        return {
+          content: text,
+          mimeType: 'text/plain',
+          extension: 'txt'
+        };
+        
+      case 'markdown':
+        // Convert to markdown format
+        const markdownContent = convertToMarkdown(text, processedPages);
+        return {
+          content: markdownContent,
+          mimeType: 'text/markdown',
+          extension: 'md'
+        };
+        
+      case 'html':
+        // Convert to HTML format
+        const htmlContent = convertToHTML(text, processedPages);
+        return {
+          content: htmlContent,
+          mimeType: 'text/html',
+          extension: 'html'
+        };
+        
+      case 'json':
+        // Convert to structured JSON format
+        const jsonContent = JSON.stringify({
+          totalPages: processedPages.length,
+          extractedText: text,
+          pages: processedPages.map(page => ({
+            pageNumber: page.pageNumber,
+            text: page.text,
+            confidence: page.confidence
+          })),
+          metadata: {
+            extractedAt: new Date().toISOString(),
+            format: 'json'
+          }
+        }, null, 2);
+        return {
+          content: jsonContent,
+          mimeType: 'application/json',
+          extension: 'json'
+        };
+        
+      case 'docx':
+        // For DOCX, we'll return formatted text for now
+        // In a full implementation, you'd use a library like docx to create proper Word documents
+        const docxContent = convertToDocxText(text, processedPages);
+        return {
+          content: docxContent,
+          mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          extension: 'docx',
+          note: 'DOCX format returned as formatted text. Full DOCX generation requires additional libraries.'
+        };
+        
+      default:
+        return {
+          content: text,
+          mimeType: 'text/plain',
+          extension: 'txt'
+        };
+    }
+  } catch (error) {
+    console.error('Error converting text format:', error);
+    return {
+      content: text,
+      mimeType: 'text/plain',
+      extension: 'txt'
+    };
+  }
+}
+
+/**
+ * Convert text to Markdown format
+ */
+function convertToMarkdown(text, processedPages) {
+  let markdown = '# Document Content\n\n';
+  
+  if (processedPages.length > 1) {
+    processedPages.forEach(page => {
+      markdown += `## Page ${page.pageNumber}\n\n`;
+      markdown += page.text.replace(/\n\n+/g, '\n\n') + '\n\n';
+      markdown += `*Confidence: ${(page.confidence * 100).toFixed(1)}%*\n\n---\n\n`;
+    });
+  } else {
+    markdown += text.replace(/\n\n+/g, '\n\n');
+  }
+  
+  return markdown;
+}
+
+/**
+ * Convert text to HTML format
+ */
+function convertToHTML(text, processedPages) {
+  let html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extracted Document Content</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+        .page { margin-bottom: 40px; padding: 20px; border-left: 4px solid #3b82f6; }
+        .page-header { color: #1f2937; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 15px; }
+        .confidence { color: #6b7280; font-size: 0.9em; margin-top: 10px; }
+        pre { white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>Document Content</h1>
+`;
+
+  if (processedPages.length > 1) {
+    processedPages.forEach(page => {
+      html += `    <div class="page">
+        <div class="page-header">
+            <h2>Page ${page.pageNumber}</h2>
+        </div>
+        <pre>${escapeHtml(page.text)}</pre>
+        <div class="confidence">Confidence: ${(page.confidence * 100).toFixed(1)}%</div>
+    </div>
+`;
+    });
+  } else {
+    html += `    <div class="page">
+        <pre>${escapeHtml(text)}</pre>
+    </div>
+`;
+  }
+  
+  html += `</body>
+</html>`;
+  
+  return html;
+}
+
+/**
+ * Convert text to formatted DOCX-style text
+ */
+function convertToDocxText(text, processedPages) {
+  let docxText = 'DOCUMENT CONTENT\n';
+  docxText += '='.repeat(50) + '\n\n';
+  
+  if (processedPages.length > 1) {
+    processedPages.forEach(page => {
+      docxText += `PAGE ${page.pageNumber}\n`;
+      docxText += '-'.repeat(20) + '\n\n';
+      docxText += page.text + '\n\n';
+      docxText += `[Confidence: ${(page.confidence * 100).toFixed(1)}%]\n\n`;
+    });
+  } else {
+    docxText += text;
+  }
+  
+  return docxText;
+}
+
+/**
+ * Escape HTML characters
+ */
+function escapeHtml(text) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }

@@ -80,7 +80,9 @@ export async function processPDF(
   file: File, 
   documentType: 'standard' | 'latex' | 'forms',
   downloadFormat: 'combined' | 'separated' | 'individual' = 'combined',
-  onProgress?: (progress: number) => void
+  onProgress?: (progress: number) => void,
+  pageRange?: { start: number; end: number },
+  outputFormat: 'text' | 'docx' | 'markdown' | 'html' | 'json' = 'text'
 ): Promise<ProcessingResult> {
   try {
     const authHeader = await getAuthHeader();
@@ -91,6 +93,13 @@ export async function processPDF(
     formData.append('documentType', documentType);
     formData.append('downloadFormat', downloadFormat);
     formData.append('processIndividually', 'true'); // Process pages individually
+    formData.append('outputFormat', outputFormat);
+    
+    // Add page range if specified
+    if (pageRange) {
+      formData.append('startPage', pageRange.start.toString());
+      formData.append('endPage', pageRange.end.toString());
+    }
     
     // Create XMLHttpRequest for progress tracking
     return new Promise((resolve, reject) => {

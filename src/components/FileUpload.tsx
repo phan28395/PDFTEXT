@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { processPDF, validateFile as apiValidateFile, ProcessingResult, ProcessingError, downloadTextFile, formatFileSize, formatProcessingTime } from '@/api/processing';
 import CloudStoragePicker from './CloudStoragePicker';
 import DocumentTypeSelector, { DocumentType } from './DocumentTypeSelector';
+import PDFViewer, { OutputFormat } from './PDFViewer';
 import { useAuth } from '@/hooks/useAuth';
 import { useUser } from '@/hooks/useDatabase';
 
@@ -40,6 +41,16 @@ export default function FileUpload({
   const [selectedDownloadFormat, setSelectedDownloadFormat] = useState<'combined' | 'separated' | 'individual'>('combined');
   const [showCostPreview, setShowCostPreview] = useState(false);
   const [estimatedPages, setEstimatedPages] = useState<number | null>(null);
+  
+  // PDF viewer state
+  const [showPDFViewer, setShowPDFViewer] = useState(false);
+  const [selectedPageRange, setSelectedPageRange] = useState<{start: number, end: number, total: number} | null>(null);
+  const [selectedOutputFormat, setSelectedOutputFormat] = useState<OutputFormat>({
+    type: 'text',
+    name: 'Plain Text',
+    description: 'Simple text format (.txt)'
+  });
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Get user data for free pages and credits
@@ -100,6 +111,12 @@ export default function FileUpload({
     setEstimatedPages(estimatedPageCount);
     setSelectedFile(fileWithPreview);
     setShowCostPreview(true);
+    
+    // Show PDF viewer for PDF files
+    if (file.type === 'application/pdf') {
+      setShowPDFViewer(true);
+    }
+    
     onFileSelect?.(file);
     toast.success(`File "${file.name}" selected successfully`);
   };
@@ -166,6 +183,15 @@ export default function FileUpload({
     setSelectedDownloadFormat('combined');
     setShowCostPreview(false);
     setEstimatedPages(null);
+    
+    // Reset PDF viewer state
+    setShowPDFViewer(false);
+    setSelectedPageRange(null);
+    setSelectedOutputFormat({
+      type: 'text',
+      name: 'Plain Text',
+      description: 'Simple text format (.txt)'
+    });
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -187,7 +213,9 @@ export default function FileUpload({
         selectedDownloadFormat,
         (progress) => {
           setUploadProgress(progress);
-        }
+        },
+        selectedPageRange ? { start: selectedPageRange.start, end: selectedPageRange.end } : undefined,
+        selectedOutputFormat.type
       );
 
       setProcessingResult(result);
@@ -219,6 +247,20 @@ export default function FileUpload({
       downloadTextFile(processingResult.text, selectedFile.name);
       toast.success('Text file downloaded successfully!');
     }
+  };
+
+  // Handle PDF viewer page range selection
+  const handlePageRangeSelect = (startPage: number, endPage: number, totalPages: number) => {
+    setSelectedPageRange({ start: startPage, end: endPage, total: totalPages });
+    
+    // Update estimated pages and cost based on selected range
+    const pagesToProcess = endPage - startPage + 1;
+    setEstimatedPages(pagesToProcess);
+  };
+
+  // Handle output format selection
+  const handleFormatSelect = (format: OutputFormat) => {
+    setSelectedOutputFormat(format);
   };
 
 
@@ -383,6 +425,18 @@ export default function FileUpload({
                     </span>
                   </label>
                 </div>
+              </div>
+            )}
+
+            {/* PDF Viewer */}
+            {showPDFViewer && selectedFile && selectedFile.type === 'application/pdf' && (
+              <div className="mt-4">
+                <PDFViewer
+                  file={selectedFile}
+                  onPageRangeSelect={handlePageRangeSelect}
+                  onFormatSelect={handleFormatSelect}
+                  className="border rounded-lg"
+                />
               </div>
             )}
 
