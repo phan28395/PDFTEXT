@@ -217,11 +217,11 @@ Time: 2:00 PM EST`,
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl md:text-4xl lg:text-5xl">
-              PDF to Text
-              <span className="text-blue-600"> in Seconds</span>
+              Textify Your Documents
+              <span className="text-blue-600"> with AI Precision</span>
             </h1>
             <p className="mt-2 text-base text-gray-600 max-w-xl mx-auto">
-              AI-powered extraction for any document. Math formulas, handwriting, invoices — we handle it all.
+              AI-powered text extraction for seamless document processing
             </p>
             
             <div className="mt-4 flex flex-col sm:flex-row gap-3 justify-center items-center">
@@ -236,12 +236,23 @@ Time: 2:00 PM EST`,
 
             {/* Trust Indicators */}
             <div className="mt-4 flex flex-wrap justify-center gap-4 text-sm text-gray-600">
-              {stats.map((stat, index) => (
-                <div key={index} className="flex items-center">
-                  <span className="font-bold text-blue-600">{stat.value}</span>
-                  <span className="ml-1">{stat.label}</span>
-                </div>
-              ))}
+              <div className="flex items-center">
+                <span className="font-semibold">Documents:</span>
+                <span className="ml-1">Invoices • Forms • Research Papers • Handwritten Notes</span>
+              </div>
+            </div>
+            <div className="mt-2 flex flex-wrap justify-center gap-4 text-sm text-gray-600">
+              <div className="flex items-center">
+                <span className="font-semibold">Input:</span>
+                <span className="ml-1">PDF • PNG • JPG • TIFF</span>
+              </div>
+              <div className="flex items-center">
+                <span className="font-semibold">Output:</span>
+                <span className="ml-1">TXT • DOCX • JSON • CSV</span>
+              </div>
+            </div>
+            <div className="mt-2 text-sm text-gray-500">
+              Process multiple files at once with batch upload support
             </div>
           </div>
         </div>
