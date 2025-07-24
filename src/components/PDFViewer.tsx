@@ -3,23 +3,30 @@ import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw, Download, FileTex
 import * as pdfjs from 'pdfjs-dist';
 
 // Set up PDF.js with local worker for CSP compliance
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && typeof pdfjs !== 'undefined') {
   try {
-    // Use local worker file to avoid CSP issues
-    pdfjs.GlobalWorkerOptions.workerSrc = '/js/pdf.worker.min.js';
+    // Set worker source before any PDF.js operations
+    // Using string concatenation to avoid any URL parsing issues
+    const workerPath = window.location.origin + '/js/pdf.worker.min.js';
     
-    // Disable eval for security and CSP compliance
-    pdfjs.GlobalWorkerOptions.isEvalSupported = false;
+    // Clear any existing worker configuration
+    if (pdfjs.GlobalWorkerOptions) {
+      pdfjs.GlobalWorkerOptions.workerSrc = workerPath;
+      pdfjs.GlobalWorkerOptions.isEvalSupported = false;
+      pdfjs.GlobalWorkerOptions.workerPort = null;
+    }
     
-    // Add error handler for worker
-    pdfjs.GlobalWorkerOptions.workerPort = null;
-    
-    console.log('PDF.js configured with local worker for CSP compliance');
-    console.log('Worker path:', pdfjs.GlobalWorkerOptions.workerSrc);
+    console.log('PDF.js worker configuration:', {
+      workerSrc: pdfjs.GlobalWorkerOptions.workerSrc,
+      origin: window.location.origin,
+      fullPath: workerPath
+    });
   } catch (error) {
-    console.warn('Failed to configure PDF.js worker:', error);
-    // Fallback: disable worker entirely if local worker fails
-    pdfjs.GlobalWorkerOptions.workerSrc = '';
+    console.error('Failed to configure PDF.js worker:', error);
+    // Try to disable worker as fallback
+    if (pdfjs.GlobalWorkerOptions) {
+      pdfjs.GlobalWorkerOptions.workerSrc = '';
+    }
   }
 }
 
