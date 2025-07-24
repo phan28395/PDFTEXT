@@ -7,6 +7,9 @@ export interface ProcessingResult {
   pages: number;
   confidence: number;
   processingTime: number;
+  documentType: 'standard' | 'latex' | 'forms';
+  downloadFormat: 'combined' | 'separated' | 'individual';
+  downloadUrls?: string[]; // For separated/individual formats
   entities?: Array<{
     type: string;
     mention_text: string;
@@ -16,6 +19,8 @@ export interface ProcessingResult {
     current: number;
     limit: number;
     remaining: number;
+    freePagesUsed: number;
+    creditsCharged: number;
   };
 }
 
@@ -69,15 +74,23 @@ async function getAuthHeader(): Promise<string> {
 }
 
 /**
- * Process a PDF file and extract text
+ * Process a PDF file and extract text with document type and download format options
  */
-export async function processPDF(file: File, onProgress?: (progress: number) => void): Promise<ProcessingResult> {
+export async function processPDF(
+  file: File, 
+  documentType: 'standard' | 'latex' | 'forms',
+  downloadFormat: 'combined' | 'separated' | 'individual' = 'combined',
+  onProgress?: (progress: number) => void
+): Promise<ProcessingResult> {
   try {
     const authHeader = await getAuthHeader();
     
     // Create FormData
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('documentType', documentType);
+    formData.append('downloadFormat', downloadFormat);
+    formData.append('processIndividually', 'true'); // Process pages individually
     
     // Create XMLHttpRequest for progress tracking
     return new Promise((resolve, reject) => {
@@ -125,8 +138,8 @@ export async function processPDF(file: File, onProgress?: (progress: number) => 
         });
       });
       
-      // Set timeout (10 minutes for large files)
-      xhr.timeout = 10 * 60 * 1000;
+      // Set timeout (15 minutes for individual page processing)
+      xhr.timeout = 15 * 60 * 1000;
       
       // Configure request
       xhr.open('POST', '/api/process-pdf');

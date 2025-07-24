@@ -27,6 +27,8 @@ export interface Database {
           user_status: UserStatus;
           pages_used: number;
           credit_balance: number; // Credits in cents
+          free_pages_remaining: number; // Free trial pages (default 5)
+          document_type: 'standard' | 'latex' | 'forms' | null; // Last selected document type
           stripe_customer_id: string | null;
           full_name: string | null;
         };
@@ -38,6 +40,8 @@ export interface Database {
           user_status?: UserStatus;
           pages_used?: number;
           credit_balance?: number;
+          free_pages_remaining?: number;
+          document_type?: 'standard' | 'latex' | 'forms' | null;
           stripe_customer_id?: string | null;
           full_name?: string | null;
         };
@@ -49,6 +53,8 @@ export interface Database {
           user_status?: UserStatus;
           pages_used?: number;
           credit_balance?: number;
+          free_pages_remaining?: number;
+          document_type?: 'standard' | 'latex' | 'forms' | null;
           stripe_customer_id?: string | null;
           full_name?: string | null;
         };
@@ -70,6 +76,8 @@ export interface Database {
           file_hash: string | null;
           was_paid: boolean;
           payment_amount: number;
+          document_type: 'standard' | 'latex' | 'forms';
+          download_format: 'combined' | 'separated' | 'individual';
           stripe_payment_intent_id: string | null;
         };
         Insert: {
@@ -88,6 +96,8 @@ export interface Database {
           file_hash?: string | null;
           was_paid?: boolean;
           payment_amount?: number;
+          document_type?: 'standard' | 'latex' | 'forms';
+          download_format?: 'combined' | 'separated' | 'individual';
           stripe_payment_intent_id?: string | null;
         };
         Update: {
@@ -106,6 +116,8 @@ export interface Database {
           file_hash?: string | null;
           was_paid?: boolean;
           payment_amount?: number;
+          document_type?: 'standard' | 'latex' | 'forms';
+          download_format?: 'combined' | 'separated' | 'individual';
           stripe_payment_intent_id?: string | null;
         };
       };

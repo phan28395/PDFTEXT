@@ -19,7 +19,7 @@ import type {
 // ================================
 
 /**
- * Get current user profile with calculated stats
+ * Get current user profile with calculated stats for pay-per-use model
  */
 export const getUserProfile = async (userId: string): Promise<DatabaseResponse<UserWithStats>> => {
   try {
@@ -40,17 +40,29 @@ export const getUserProfile = async (userId: string): Promise<DatabaseResponse<U
       .eq('user_id', userId)
       .eq('processing_status', 'completed');
 
-    // Calculate stats
-    const pages_remaining = Math.max(0, user.pages_limit - user.pages_used);
-    const usage_percentage = user.pages_limit > 0 ? (user.pages_used / user.pages_limit) * 100 : 0;
-    const can_upload = user.subscription_status === 'pro' || pages_remaining > 0;
+    // Get total amount spent
+    const { data: totalSpentData } = await supabase
+      .from('processing_history')
+      .select('payment_amount')
+      .eq('user_id', userId)
+      .eq('was_paid', true);
+
+    const totalSpent = totalSpentData?.reduce((sum, record) => sum + (record.payment_amount || 0), 0) || 0;
+
+    // Calculate pay-per-use stats
+    const costPerPage = 1.2; // 1.2 cents per page
+    const creditBalance = user.credit_balance || 0;
+    const freePages = user.free_pages_remaining || 0;
+    const pagesAvailable = Math.floor(creditBalance / costPerPage) + freePages;
+    const canProcess = creditBalance >= costPerPage || freePages > 0;
 
     const userWithStats: UserWithStats = {
       ...user,
-      pages_remaining,
-      usage_percentage,
-      can_upload,
+      credit_balance_formatted: `$${(creditBalance / 100).toFixed(2)}`,
+      pages_available: pagesAvailable,
+      can_process: canProcess,
       total_files_processed: totalFiles || 0,
+      total_spent: totalSpent,
     };
 
     return { data: userWithStats, error: null };
@@ -92,19 +104,40 @@ export const updateUserProfile = async (userId: string, updates: UserUpdate): Pr
 };
 
 /**
- * Check if user can process specified number of pages
+ * Check if user can process specified number of pages with new pay-per-use model
  */
 export const canUserProcessPages = async (userId: string, pageCount: number): Promise<DatabaseResponse<boolean>> => {
   try {
-    const { data, error } = await supabase
+    const costPerPage = 1.2; // 1.2 cents per page
+    
+    // Try to use the database function first (if it exists)
+    const { data: rpcResult, error: rpcError } = await supabase
       .rpc('can_user_process_pages', { 
         user_uuid: userId, 
-        pages_count: pageCount 
+        pages_count: pageCount,
+        cost_per_page: costPerPage
       });
 
-    if (error) throw error;
+    if (!rpcError && rpcResult !== null) {
+      return { data: rpcResult, error: null };
+    }
 
-    return { data: data || false, error: null };
+    // Fallback to manual calculation if RPC doesn't exist
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('credit_balance, free_pages_remaining')
+      .eq('id', userId)
+      .single();
+
+    if (userError) throw userError;
+    if (!user) return { data: false, error: null };
+
+    const creditBalance = user.credit_balance || 0;
+    const freePages = user.free_pages_remaining || 0;
+    const totalCost = Math.max(0, pageCount - freePages) * costPerPage;
+    const canAfford = totalCost <= creditBalance;
+
+    return { data: canAfford, error: null };
   } catch (error: any) {
     return { 
       data: false, 
@@ -117,25 +150,102 @@ export const canUserProcessPages = async (userId: string, pageCount: number): Pr
 };
 
 /**
- * Update user pages usage (with validation)
+ * Update user pages usage (with validation) - legacy function for compatibility
  */
 export const updateUserPagesUsage = async (userId: string, pageCount: number): Promise<DatabaseResponse<boolean>> => {
   try {
-    const { data, error } = await supabase
-      .rpc('update_user_pages_usage', { 
-        user_uuid: userId, 
-        pages_count: pageCount 
-      });
-
-    if (error) throw error;
-
-    return { data: data || false, error: null };
+    // Use the new charge function instead
+    const result = await chargeUserForPages(userId, pageCount);
+    return { data: !result.error, error: result.error };
   } catch (error: any) {
     return { 
       data: false, 
       error: { 
         code: error.code || 'USAGE_UPDATE_ERROR', 
         message: handleSupabaseError(error, 'update pages usage') 
+      } 
+    };
+  }
+};
+
+/**
+ * Charge user for pages (uses free pages first, then credits)
+ */
+export const chargeUserForPages = async (userId: string, pageCount: number): Promise<DatabaseResponse<{ freePagesUsed: number; creditsCharged: number; newBalance: number }>> => {
+  try {
+    const costPerPage = 1.2; // 1.2 cents per page
+    
+    // Try to use database function first
+    const { data: rpcResult, error: rpcError } = await supabase
+      .rpc('charge_user_credits', { 
+        user_uuid: userId, 
+        pages_count: pageCount,
+        cost_per_page: costPerPage
+      });
+
+    if (!rpcError && rpcResult) {
+      return { 
+        data: {
+          freePagesUsed: 0, // RPC doesn't return this detail
+          creditsCharged: 0, // RPC doesn't return this detail  
+          newBalance: rpcResult.new_balance
+        }, 
+        error: null 
+      };
+    }
+
+    // Fallback to manual transaction
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('credit_balance, free_pages_remaining, pages_used')
+      .eq('id', userId)
+      .single();
+
+    if (userError) throw userError;
+    if (!user) throw new Error('User not found');
+
+    const creditBalance = user.credit_balance || 0;
+    const freePages = user.free_pages_remaining || 0;
+    
+    // Calculate charges
+    const freePagesUsed = Math.min(pageCount, freePages);
+    const pagesNeedingPayment = pageCount - freePagesUsed;
+    const creditsCharged = pagesNeedingPayment * costPerPage;
+    
+    if (creditsCharged > creditBalance) {
+      return { 
+        data: null, 
+        error: { code: 'INSUFFICIENT_CREDITS', message: 'Insufficient credits' } 
+      };
+    }
+
+    // Update user record
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({
+        credit_balance: creditBalance - creditsCharged,
+        free_pages_remaining: freePages - freePagesUsed,
+        pages_used: (user.pages_used || 0) + pageCount,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userId);
+
+    if (updateError) throw updateError;
+
+    return { 
+      data: {
+        freePagesUsed,
+        creditsCharged,
+        newBalance: creditBalance - creditsCharged
+      }, 
+      error: null 
+    };
+  } catch (error: any) {
+    return { 
+      data: null, 
+      error: { 
+        code: error.code || 'CHARGE_ERROR', 
+        message: handleSupabaseError(error, 'charge user for pages') 
       } 
     };
   }

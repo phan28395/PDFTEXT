@@ -1,8 +1,11 @@
 import { useState, useRef, DragEvent, ChangeEvent } from 'react';
-import { Upload, X, FileText, AlertCircle, CheckCircle, Loader2, Download, Cloud } from 'lucide-react';
+import { Upload, X, FileText, AlertCircle, CheckCircle, Loader2, Download, Cloud, DollarSign } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { processPDF, validateFile as apiValidateFile, ProcessingResult, ProcessingError, downloadTextFile, formatFileSize, formatProcessingTime } from '@/api/processing';
 import CloudStoragePicker from './CloudStoragePicker';
+import DocumentTypeSelector, { DocumentType } from './DocumentTypeSelector';
+import { useAuth } from '@/hooks/useAuth';
+import { useUser } from '@/hooks/useDatabase';
 
 interface FileUploadProps {
   onFileSelect?: (file: File) => void;
@@ -33,12 +36,46 @@ export default function FileUpload({
   const [processingResult, setProcessingResult] = useState<ProcessingResult | null>(null);
   const [processingError, setProcessingError] = useState<ProcessingError | null>(null);
   const [showCloudPicker, setShowCloudPicker] = useState(false);
+  const [selectedDocumentType, setSelectedDocumentType] = useState<DocumentType | null>(null);
+  const [selectedDownloadFormat, setSelectedDownloadFormat] = useState<'combined' | 'separated' | 'individual'>('combined');
+  const [showCostPreview, setShowCostPreview] = useState(false);
+  const [estimatedPages, setEstimatedPages] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Get user data for free pages and credits
+  const { user } = useAuth();
+  const { user: userData } = useUser(user?.id);
+  
+  const costPerPage = 1.2; // 1.2 cents per page ($0.012)
+  const freePages = userData?.free_pages_remaining || 0;
+  const creditBalance = userData?.credit_balance || 0;
 
   // File validation using API validation
   const validateFile = (file: File): string | null => {
     const validation = apiValidateFile(file);
     return validation.valid ? null : validation.error || 'File validation failed';
+  };
+
+  // Estimate pages from file size (rough approximation)
+  const estimatePagesFromSize = (fileSize: number): number => {
+    // Rough estimate: 1 page ≈ 100KB for text PDFs, can vary widely
+    const averagePageSize = 100 * 1024; // 100KB
+    return Math.max(1, Math.ceil(fileSize / averagePageSize));
+  };
+
+  // Calculate cost breakdown
+  const calculateCost = (pages: number) => {
+    const pagesUsedFromFree = Math.min(pages, freePages);
+    const pagesNeedingPayment = Math.max(0, pages - freePages);
+    const totalCost = pagesNeedingPayment * costPerPage;
+    
+    return {
+      totalPages: pages,
+      freePages: pagesUsedFromFree,
+      paidPages: pagesNeedingPayment,
+      totalCostCents: totalCost,
+      canAfford: totalCost <= creditBalance || pagesNeedingPayment === 0
+    };
   };
 
   // Handle file selection
@@ -58,7 +95,11 @@ export default function FileUpload({
       preview: URL.createObjectURL(file)
     });
 
+    // Estimate pages and show cost preview
+    const estimatedPageCount = estimatePagesFromSize(file.size);
+    setEstimatedPages(estimatedPageCount);
     setSelectedFile(fileWithPreview);
+    setShowCostPreview(true);
     onFileSelect?.(file);
     toast.success(`File "${file.name}" selected successfully`);
   };
@@ -121,6 +162,10 @@ export default function FileUpload({
     setProcessingResult(null);
     setProcessingError(null);
     setUploadProgress(0);
+    setSelectedDocumentType(null);
+    setSelectedDownloadFormat('combined');
+    setShowCostPreview(false);
+    setEstimatedPages(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -128,7 +173,7 @@ export default function FileUpload({
 
   // Process PDF using real API
   const handleUpload = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || !selectedDocumentType) return;
 
     setUploading(true);
     setUploadProgress(0);
@@ -136,9 +181,14 @@ export default function FileUpload({
     setProcessingResult(null);
 
     try {
-      const result = await processPDF(selectedFile, (progress) => {
-        setUploadProgress(progress);
-      });
+      const result = await processPDF(
+        selectedFile, 
+        selectedDocumentType, 
+        selectedDownloadFormat,
+        (progress) => {
+          setUploadProgress(progress);
+        }
+      );
 
       setProcessingResult(result);
       toast.success(`Successfully processed ${result.pages} page${result.pages > 1 ? 's' : ''}!`);
@@ -229,6 +279,113 @@ export default function FileUpload({
               </button>
             </div>
 
+            {/* Document Type Selection */}
+            {showCostPreview && !selectedDocumentType && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <DocumentTypeSelector
+                  selectedType={selectedDocumentType}
+                  onTypeSelect={setSelectedDocumentType}
+                  className="mb-4"
+                />
+              </div>
+            )}
+
+            {/* Cost Preview */}
+            {showCostPreview && selectedDocumentType && estimatedPages && (
+              <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-gray-900 flex items-center">
+                    <DollarSign className="h-4 w-4 mr-1" />
+                    Cost Preview
+                  </h4>
+                  <span className="text-xs text-gray-500">Estimated</span>
+                </div>
+                
+                {(() => {
+                  const cost = calculateCost(estimatedPages);
+                  return (
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Estimated pages:</span>
+                        <span className="font-medium">{cost.totalPages}</span>
+                      </div>
+                      {cost.freePages > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-green-600">Free pages:</span>
+                          <span className="font-medium text-green-600">-{cost.freePages}</span>
+                        </div>
+                      )}
+                      {cost.paidPages > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Paid pages:</span>
+                          <span className="font-medium">{cost.paidPages} × $0.012</span>
+                        </div>
+                      )}
+                      <div className="border-t pt-2 flex justify-between font-medium">
+                        <span>Total cost:</span>
+                        <span className={cost.totalCostCents === 0 ? 'text-green-600' : 'text-gray-900'}>
+                          {cost.totalCostCents === 0 ? 'FREE' : `$${(cost.totalCostCents / 100).toFixed(3)}`}
+                        </span>
+                      </div>
+                      {!cost.canAfford && (
+                        <div className="bg-red-50 border border-red-200 rounded p-2 text-red-700 text-xs">
+                          Insufficient credits. Please add credits to continue.
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* Download Format Selection */}
+            {showCostPreview && selectedDocumentType && (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <h4 className="font-medium text-gray-900 mb-3">Download Format</h4>
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="downloadFormat"
+                      value="combined"
+                      checked={selectedDownloadFormat === 'combined'}
+                      onChange={(e) => setSelectedDownloadFormat(e.target.value as any)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">
+                      <span className="font-medium">Combined</span> - Single file with all pages
+                    </span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="downloadFormat"
+                      value="separated"
+                      checked={selectedDownloadFormat === 'separated'}
+                      onChange={(e) => setSelectedDownloadFormat(e.target.value as any)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">
+                      <span className="font-medium">Separated</span> - Multiple files, one per page
+                    </span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="downloadFormat"
+                      value="individual"
+                      checked={selectedDownloadFormat === 'individual'}
+                      onChange={(e) => setSelectedDownloadFormat(e.target.value as any)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">
+                      <span className="font-medium">Individual</span> - Zip file with individual page files
+                    </span>
+                  </label>
+                </div>
+              </div>
+            )}
+
             {/* Upload Progress */}
             {uploading && (
               <div className="space-y-2">
@@ -246,19 +403,24 @@ export default function FileUpload({
             )}
 
             {/* Upload Button */}
-            {!uploading && !processingResult && (
+            {!uploading && !processingResult && selectedDocumentType && estimatedPages && (
               <div className="flex space-x-3 justify-center">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleUpload();
-                  }}
-                  disabled={!!validationError}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors inline-flex items-center"
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Convert to Text
-                </button>
+                {(() => {
+                  const cost = calculateCost(estimatedPages);
+                  return (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleUpload();
+                      }}
+                      disabled={!!validationError || !cost.canAfford}
+                      className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors inline-flex items-center"
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      {cost.totalCostCents === 0 ? 'Process for FREE' : `Process for $${(cost.totalCostCents / 100).toFixed(3)}`}
+                    </button>
+                  );
+                })()}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();

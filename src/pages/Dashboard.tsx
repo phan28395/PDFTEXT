@@ -24,11 +24,14 @@ export default function Dashboard() {
   const { recentRecords, loading: historyLoading } = useRecentProcessing();
   const { stats, loading: statsLoading } = useProcessingStats();
 
-  // Calculate usage statistics - pay per use model
+  // Calculate usage statistics - pay per use model with free trial
   const pagesUsed = userData?.pages_used || 0;
   const creditBalance = userData?.credit_balance || 0; // Credits in cents
-  const costPerPage = 5; // 5 cents per page
-  const hasCredits = creditBalance >= costPerPage;
+  const freePages = userData?.free_pages_remaining || 5; // Default 5 free pages
+  const costPerPage = 1.2; // 1.2 cents per page ($0.012)
+  const hasCredits = creditBalance >= costPerPage || freePages > 0;
+  const isTrialUser = freePages > 0;
+  const totalAvailablePages = Math.floor(creditBalance / costPerPage) + freePages;
   
   // Credit balance color based on remaining credits
   const getCreditColor = () => {
@@ -79,7 +82,10 @@ export default function Dashboard() {
                     Convert PDF to Text
                   </h2>
                   <p className="text-gray-600">
-                    Upload your PDF file and extract text instantly with AI-powered processing
+                    {isTrialUser ? 
+                      `Try for free! ${freePages} pages remaining, then $0.012 per page` :
+                      'Upload your PDF file and extract text instantly with AI-powered processing'
+                    }
                   </p>
                 </div>
                 <FileUpload 
@@ -101,7 +107,10 @@ export default function Dashboard() {
               Welcome back, {user?.email?.split('@')[0] || 'User'}!
             </h1>
             <p className="text-gray-600 mt-1">
-              Process PDFs with our pay-per-use model at $0.05 per page
+              {isTrialUser ? 
+                `${freePages} free pages remaining, then $0.012 per page` :
+                'Process PDFs with our pay-per-use model at $0.012 per page'
+              }
             </p>
           </div>
           <div className="mt-4 sm:mt-0">
@@ -127,8 +136,32 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Credit Balance Alert */}
-        {creditBalance < 500 && (
+        {/* Free Trial or Credit Balance Alert */}
+        {isTrialUser && freePages <= 2 && (
+          <div className="border rounded-lg p-4 bg-blue-50 border-blue-200 text-blue-600">
+            <div className="flex items-center">
+              <AlertCircle className="h-5 w-5 mr-3" />
+              <div className="flex-1">
+                <h3 className="font-medium">
+                  {freePages === 0 ? 'Free Trial Completed' : `${freePages} Free Pages Remaining`}
+                </h3>
+                <p className="text-sm mt-1">
+                  {freePages === 0 ? 
+                    'Add credits to continue processing at just $0.012 per page.' :
+                    `Try our service risk-free! After your free pages, processing costs just $0.012 per page.`
+                  }
+                </p>
+              </div>
+              <Link
+                to="/account-settings"
+                className="ml-4 text-sm underline hover:no-underline"
+              >
+                Add Credits
+              </Link>
+            </div>
+          </div>
+        )}
+        {!isTrialUser && creditBalance < 500 && (
           <div className={`border rounded-lg p-4 ${getCreditColor()}`}>
             <div className="flex items-center">
               <AlertCircle className="h-5 w-5 mr-3" />
@@ -153,23 +186,32 @@ export default function Dashboard() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {/* Credit Balance */}
+          {/* Available Pages */}
           <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Credit Balance</p>
+                <p className="text-sm font-medium text-gray-600">Available Pages</p>
                 <p className="text-2xl sm:text-3xl font-bold text-gray-900">
-                  {userLoading ? '...' : `$${(creditBalance / 100).toFixed(2)}`}
+                  {userLoading ? '...' : totalAvailablePages}
                 </p>
-                <p className="text-sm text-gray-500">
-                  ~{Math.floor(creditBalance / costPerPage)} pages
-                </p>
+                <div className="text-sm text-gray-500">
+                  {isTrialUser ? (
+                    <>
+                      <span className="text-green-600 font-medium">{freePages} free</span>
+                      {creditBalance > 0 && <span> + {Math.floor(creditBalance / costPerPage)} paid</span>}
+                    </>
+                  ) : (
+                    <span>${(creditBalance / 100).toFixed(2)} balance</span>
+                  )}
+                </div>
               </div>
               <div className={`p-3 rounded-lg ${
+                isTrialUser ? 'bg-green-100' :
                 creditBalance < 100 ? 'bg-red-100' : 
                 creditBalance < 500 ? 'bg-yellow-100' : 'bg-green-100'
               }`}>
                 <Crown className={`h-6 w-6 sm:h-8 sm:w-8 ${
+                  isTrialUser ? 'text-green-600' :
                   creditBalance < 100 ? 'text-red-600' : 
                   creditBalance < 500 ? 'text-yellow-600' : 'text-green-600'
                 }`} />
@@ -274,24 +316,35 @@ export default function Dashboard() {
 
         {/* Two-column layout for billing and processing info */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Credit Management */}
+          {/* Pricing & Credits */}
           <div className="bg-white rounded-lg shadow-sm border p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Pay-Per-Use Billing</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              {isTrialUser ? 'Free Trial + Pay-Per-Use' : 'Pay-Per-Use Billing'}
+            </h2>
             <div className="space-y-4">
+              {isTrialUser && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-green-800">Free trial pages</span>
+                    <span className="text-sm font-bold text-green-800">{freePages} remaining</span>
+                  </div>
+                  <p className="text-xs text-green-600 mt-1">No credit card required!</p>
+                </div>
+              )}
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Cost per page</span>
-                <span className="text-sm font-medium text-gray-900">$0.05</span>
+                <span className="text-sm font-medium text-gray-900">$0.012</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Current balance</span>
+                <span className="text-sm text-gray-600">Credit balance</span>
                 <span className="text-sm font-medium text-green-600">
                   ${(creditBalance / 100).toFixed(2)}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Pages available</span>
+                <span className="text-sm text-gray-600">Total pages available</span>
                 <span className="text-sm font-medium text-gray-900">
-                  {Math.floor(creditBalance / costPerPage)} pages
+                  {totalAvailablePages} pages
                 </span>
               </div>
               <div className="pt-4 border-t">
@@ -299,7 +352,7 @@ export default function Dashboard() {
                   to="/account-settings"
                   className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium text-center block"
                 >
-                  Add Credits
+                  {isTrialUser ? 'Add Credits for More Pages' : 'Add Credits'}
                 </Link>
               </div>
             </div>
@@ -424,7 +477,7 @@ export default function Dashboard() {
                 <FileText className="h-16 w-16 text-gray-300 mx-auto" />
                 <h3 className="text-lg font-medium text-gray-900 mt-4">No documents processed yet</h3>
                 <p className="text-gray-500 mt-2">
-                  Upload your first PDF to start converting documents to text at $0.05 per page
+                  Upload your first PDF to start converting documents to text at $0.012 per page
                 </p>
                 {hasCredits && (
                   <div className="mt-6 text-center">
