@@ -1,9 +1,27 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
+import fs from 'fs'
+import path from 'path'
+
+// Plugin to copy PDF.js worker to public directory
+const copyPdfWorker = () => {
+  return {
+    name: 'copy-pdf-worker',
+    buildStart() {
+      const workerPath = path.resolve(__dirname, 'node_modules/pdfjs-dist/build/pdf.worker.min.js');
+      const destPath = path.resolve(__dirname, 'public/pdf.worker.min.js');
+      
+      if (fs.existsSync(workerPath)) {
+        fs.copyFileSync(workerPath, destPath);
+        console.log('PDF.js worker copied to public directory');
+      }
+    }
+  };
+}
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), copyPdfWorker()],
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
@@ -14,6 +32,10 @@ export default defineConfig({
     headers: {
       'Cross-Origin-Embedder-Policy': 'require-corp',
       'Cross-Origin-Opener-Policy': 'same-origin',
+    },
+    fs: {
+      // Allow serving files from node_modules for PDF.js worker
+      allow: ['..'],
     },
   },
   build: {

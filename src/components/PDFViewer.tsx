@@ -2,13 +2,69 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw, Download, FileText, Settings } from 'lucide-react';
 import * as pdfjs from 'pdfjs-dist';
 
-// Set up PDF.js worker - use CDN directly for production reliability
+// Set up PDF.js worker with multiple fallback strategies
 if (typeof window !== 'undefined') {
-  // Use CDN for the worker to ensure it loads correctly in production
-  pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+  const setupWorker = async () => {
+    const pdfjsVersion = pdfjs.version;
+    console.log(`Setting up PDF.js worker for version: ${pdfjsVersion}`);
+    
+    // Strategy 1: Try local worker files first (if available in public directory)
+    const localWorkerUrls = ['/pdf-worker-loader.js', '/pdf.worker.min.js', '/pdf.worker.js'];
+    
+    for (const url of localWorkerUrls) {
+      try {
+        const response = await fetch(url, { method: 'HEAD' });
+        if (response.ok) {
+          pdfjs.GlobalWorkerOptions.workerSrc = url;
+          console.log(`Using local PDF.js worker: ${url}`);
+          return;
+        }
+      } catch (e) {
+        console.log(`Local worker ${url} not available`);
+      }
+    }
+    
+    // Strategy 2: Use CDN with exact version
+    const cdnUrls = [
+      `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/legacy/build/pdf.worker.min.mjs`,
+      `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.mjs`,
+      `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsVersion}/legacy/build/pdf.worker.min.mjs`,
+      `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsVersion}/pdf.worker.min.js`
+    ];
+    
+    // Try each CDN URL
+    for (const url of cdnUrls) {
+      try {
+        const response = await fetch(url, { method: 'HEAD' });
+        if (response.ok) {
+          pdfjs.GlobalWorkerOptions.workerSrc = url;
+          console.log(`Using PDF.js worker from: ${url}`);
+          return;
+        }
+      } catch (e) {
+        console.log(`Failed to reach: ${url}`);
+      }
+    }
+    
+    // Strategy 3: Try to create worker inline (last resort)
+    try {
+      const workerBlob = new Blob([`importScripts('${cdnUrls[0]}')`], { type: 'application/javascript' });
+      const workerUrl = URL.createObjectURL(workerBlob);
+      pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+      console.log('Using inline worker with CDN import');
+    } catch (e) {
+      console.error('Failed to create inline worker:', e);
+      // Final fallback - disable worker (will be slower but functional)
+      pdfjs.GlobalWorkerOptions.workerSrc = undefined;
+      console.warn('PDF.js running without worker - performance may be impacted');
+    }
+  };
   
-  // Enable worker error handling
-  pdfjs.GlobalWorkerOptions.workerPort = null;
+  // Initialize worker setup
+  setupWorker().catch(console.error);
+  
+  // Disable eval for security (if supported)
+  pdfjs.GlobalWorkerOptions.isEvalSupported = false;
 }
 
 interface PDFViewerProps {
@@ -77,7 +133,16 @@ export default function PDFViewer({ file, onPageRangeSelect, onFormatSelect, cla
           isEvalSupported: false,
           disableAutoFetch: true,
           disableStream: true,
+          // Additional error handling options
+          stopAtErrors: false,
+          disableFontFace: false,
+          enableXfa: false,
         });
+        
+        // Add progress handler
+        loadingTask.onProgress = (progressData: any) => {
+          console.log(`Loading PDF: ${progressData.loaded} / ${progressData.total} bytes`);
+        };
         
         const loadedPdf = await loadingTask.promise;
         
