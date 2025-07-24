@@ -25,6 +25,19 @@ export default function Dashboard() {
   const costPerPage = 1.2; // 1.2 cents per page ($0.012)
   const hasCredits = creditBalance >= costPerPage || freePages > 0;
   const isTrialUser = freePages > 0;
+  
+  // Calculate derived statistics
+  const totalAvailablePages = freePages + Math.floor(creditBalance / costPerPage);
+  const pagesUsed = userData?.pages_processed || 0;
+  const stats = { totalFiles: userData?.files_processed || 0 };
+  const statsLoading = userLoading;
+
+  // Helper function for credit balance styling
+  const getCreditColor = () => {
+    if (creditBalance < 100) return 'bg-red-50 border-red-200 text-red-600';
+    if (creditBalance < 500) return 'bg-yellow-50 border-yellow-200 text-yellow-600';
+    return 'bg-green-50 border-green-200 text-green-600';
+  };
 
   return (
     <DashboardLayout>
