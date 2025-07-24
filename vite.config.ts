@@ -9,12 +9,15 @@ const copyPdfWorker = () => {
   return {
     name: 'copy-pdf-worker',
     buildStart() {
-      const workerPath = path.resolve(__dirname, 'node_modules/pdfjs-dist/build/pdf.worker.min.js');
-      const destPath = path.resolve(__dirname, 'public/pdf.worker.min.js');
+      // Copy the legacy worker (more compatible)
+      const workerPath = path.resolve(__dirname, 'node_modules/pdfjs-dist/legacy/build/pdf.worker.min.mjs');
+      const destPath = path.resolve(__dirname, 'public/pdf.worker.legacy.js');
       
       if (fs.existsSync(workerPath)) {
         fs.copyFileSync(workerPath, destPath);
-        console.log('PDF.js worker copied to public directory');
+        console.log('PDF.js legacy worker copied to public directory');
+      } else {
+        console.warn('PDF.js worker not found at:', workerPath);
       }
     }
   };
