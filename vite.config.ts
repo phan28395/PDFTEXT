@@ -85,7 +85,7 @@ export default defineConfig({
       'react-router-dom',
       '@supabase/supabase-js',
       'lucide-react',
-      'pdfjs-dist',
+      'pdfjs-dist/legacy/build/pdf.mjs',
     ],
     exclude: [
       'pdfjs-dist/build/pdf.worker.min.mjs',
