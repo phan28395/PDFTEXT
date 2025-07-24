@@ -17,7 +17,6 @@ import { useRecentProcessing, useProcessingStats } from '@/hooks/useProcessing';
 import { DashboardLayout } from '@/components/Layout';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import FileUpload from '@/components/FileUpload';
-import { SubscriptionCard } from '@/components/SubscriptionCard';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -25,17 +24,16 @@ export default function Dashboard() {
   const { recentRecords, loading: historyLoading } = useRecentProcessing();
   const { stats, loading: statsLoading } = useProcessingStats();
 
-  // Calculate usage statistics
+  // Calculate usage statistics - pay per use model
   const pagesUsed = userData?.pages_used || 0;
-  const subscriptionType = userData?.subscription_status || 'free';
-  const pagesLimit = userData?.pages_limit || (subscriptionType === 'pro' ? 1000 : 10);
-  const usagePercentage = (pagesUsed / pagesLimit) * 100;
-  const remainingPages = Math.max(0, pagesLimit - pagesUsed);
+  const creditBalance = userData?.credit_balance || 0; // Credits in cents
+  const costPerPage = 5; // 5 cents per page
+  const hasCredits = creditBalance >= costPerPage;
   
-  // Usage color based on percentage
-  const getUsageColor = () => {
-    if (usagePercentage >= 90) return 'text-red-600 bg-red-50 border-red-200';
-    if (usagePercentage >= 70) return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+  // Credit balance color based on remaining credits
+  const getCreditColor = () => {
+    if (creditBalance < 100) return 'text-red-600 bg-red-50 border-red-200'; // Less than $1
+    if (creditBalance < 500) return 'text-yellow-600 bg-yellow-50 border-yellow-200'; // Less than $5
     return 'text-green-600 bg-green-50 border-green-200';
   };
 
@@ -46,25 +44,25 @@ export default function Dashboard() {
       title: 'Upload New PDF',
       description: 'Convert your PDF to text',
       icon: Upload,
-      href: '/upload',
+      href: '/batch',
       color: 'bg-blue-600 hover:bg-blue-700',
-      available: remainingPages > 0
+      available: hasCredits
     },
     {
       title: 'View History',
       description: 'See all processed files',
       icon: FileText,
-      href: '/history',
+      href: '/usage-history',
       color: 'bg-gray-600 hover:bg-gray-700',
       available: true
     },
     {
-      title: 'Upgrade Plan',
-      description: 'Get unlimited processing',
+      title: 'Add Credits',
+      description: 'Top up your account',
       icon: Crown,
-      href: '/subscription',
-      color: 'bg-purple-600 hover:bg-purple-700',
-      available: subscriptionType !== 'pro'
+      href: '/account-settings',
+      color: 'bg-green-600 hover:bg-green-700',
+      available: true
     }
   ];
 
@@ -73,7 +71,7 @@ export default function Dashboard() {
       <ErrorBoundary>
         <div className="p-6 space-y-6">
           {/* Quick Upload Section */}
-          {remainingPages > 0 && (
+          {hasCredits && (
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-100">
               <div className="max-w-3xl mx-auto">
                 <div className="text-center mb-6">
@@ -103,13 +101,13 @@ export default function Dashboard() {
               Welcome back, {user?.email?.split('@')[0] || 'User'}!
             </h1>
             <p className="text-gray-600 mt-1">
-              Manage your PDF conversions and track your usage
+              Process PDFs with our pay-per-use model at $0.05 per page
             </p>
           </div>
           <div className="mt-4 sm:mt-0">
-            {remainingPages > 0 ? (
+            {hasCredits ? (
               <Link
-                to="/upload"
+                to="/batch"
                 className="bg-blue-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center text-sm sm:text-base"
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -118,114 +116,80 @@ export default function Dashboard() {
               </Link>
             ) : (
               <Link
-                to="/subscription"
-                className="bg-purple-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors inline-flex items-center text-sm sm:text-base"
+                to="/account-settings"
+                className="bg-green-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-green-700 transition-colors inline-flex items-center text-sm sm:text-base"
               >
                 <Crown className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Upgrade Now</span>
-                <span className="sm:hidden">Upgrade</span>
+                <span className="hidden sm:inline">Add Credits</span>
+                <span className="sm:hidden">Add Credits</span>
               </Link>
             )}
           </div>
         </div>
 
-        {/* Usage Alert */}
-        {usagePercentage >= 80 && (
-          <div className={`border rounded-lg p-4 ${getUsageColor()}`}>
+        {/* Credit Balance Alert */}
+        {creditBalance < 500 && (
+          <div className={`border rounded-lg p-4 ${getCreditColor()}`}>
             <div className="flex items-center">
               <AlertCircle className="h-5 w-5 mr-3" />
               <div className="flex-1">
                 <h3 className="font-medium">
-                  {usagePercentage >= 90 ? 'Usage Limit Almost Reached' : 'High Usage Alert'}
+                  {creditBalance < 100 ? 'Low Credit Balance' : 'Credit Balance Running Low'}
                 </h3>
                 <p className="text-sm mt-1">
-                  You've used {Math.round(usagePercentage)}% of your monthly limit. 
-                  {remainingPages === 0 ? ' Please upgrade to continue processing.' : ` ${remainingPages} pages remaining.`}
+                  You have ${(creditBalance / 100).toFixed(2)} in credits remaining. 
+                  {creditBalance < costPerPage ? ' Add credits to continue processing.' : ` Enough for ${Math.floor(creditBalance / costPerPage)} pages.`}
                 </p>
               </div>
-              {subscriptionType !== 'pro' && (
-                <Link
-                  to="/subscription"
-                  className="ml-4 text-sm underline hover:no-underline"
-                >
-                  Upgrade
-                </Link>
-              )}
+              <Link
+                to="/account-settings"
+                className="ml-4 text-sm underline hover:no-underline"
+              >
+                Add Credits
+              </Link>
             </div>
           </div>
         )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {/* Pages Used */}
+          {/* Credit Balance */}
           <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Pages Used</p>
+                <p className="text-sm font-medium text-gray-600">Credit Balance</p>
                 <p className="text-2xl sm:text-3xl font-bold text-gray-900">
-                  {userLoading ? '...' : pagesUsed}
+                  {userLoading ? '...' : `$${(creditBalance / 100).toFixed(2)}`}
                 </p>
                 <p className="text-sm text-gray-500">
-                  of {pagesLimit} limit
+                  ~{Math.floor(creditBalance / costPerPage)} pages
                 </p>
               </div>
-              <div className="w-16 h-16 relative">
-                <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 36 36">
-                  <path
-                    className="text-gray-200"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    fill="none"
-                    d="M18 2.0845a 15.9155 15.9155 0 0 1 0 31.831 15.9155 15.9155 0 0 1 0-31.831"
-                  />
-                  <path
-                    className={`transition-all duration-300 ${
-                      usagePercentage >= 90 ? 'text-red-500' : 
-                      usagePercentage >= 70 ? 'text-yellow-500' : 'text-blue-500'
-                    }`}
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    fill="none"
-                    strokeDasharray={`${usagePercentage}, 100`}
-                    d="M18 2.0845a 15.9155 15.9155 0 0 1 0 31.831 15.9155 15.9155 0 0 1 0-31.831"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xs font-medium text-gray-600">
-                    {Math.round(usagePercentage)}%
-                  </span>
-                </div>
+              <div className={`p-3 rounded-lg ${
+                creditBalance < 100 ? 'bg-red-100' : 
+                creditBalance < 500 ? 'bg-yellow-100' : 'bg-green-100'
+              }`}>
+                <Crown className={`h-6 w-6 sm:h-8 sm:w-8 ${
+                  creditBalance < 100 ? 'text-red-600' : 
+                  creditBalance < 500 ? 'text-yellow-600' : 'text-green-600'
+                }`} />
               </div>
             </div>
           </div>
 
-          {/* Current Plan */}
+          {/* Pages Processed */}
           <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border">
             <div className="flex items-center">
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600">Current Plan</p>
+                <p className="text-sm font-medium text-gray-600">Pages Processed</p>
                 <p className="text-xl sm:text-2xl font-bold text-gray-900">
-                  {userLoading ? '...' : subscriptionType === 'pro' ? 'Pro' : 'Free'}
+                  {userLoading ? '...' : pagesUsed}
                 </p>
-                {subscriptionType === 'pro' ? (
-                  <p className="text-sm text-green-600 flex items-center mt-1">
-                    <Crown className="h-3 w-3 mr-1" />
-                    Unlimited processing
-                  </p>
-                ) : (
-                  <Link
-                    to="/pricing"
-                    className="text-sm text-blue-600 hover:text-blue-700 underline mt-1 inline-block"
-                  >
-                    Upgrade for unlimited
-                  </Link>
-                )}
+                <p className="text-sm text-green-600 mt-1">
+                  Total lifetime pages
+                </p>
               </div>
-              {subscriptionType === 'pro' ? (
-                <Crown className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-500" />
-              ) : (
-                <BarChart3 className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
-              )}
+              <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
             </div>
           </div>
 
@@ -299,7 +263,7 @@ export default function Dashboard() {
                       {action.description}
                     </p>
                     {isDisabled && action.title === 'Upload New PDF' && (
-                      <p className="text-xs text-red-600 mt-2">Limit reached</p>
+                      <p className="text-xs text-red-600 mt-2">Insufficient credits</p>
                     )}
                   </div>
                 </Link>
@@ -308,10 +272,38 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Two-column layout for subscription and processing info */}
+        {/* Two-column layout for billing and processing info */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Subscription Management */}
-          <SubscriptionCard />
+          {/* Credit Management */}
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Pay-Per-Use Billing</h2>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Cost per page</span>
+                <span className="text-sm font-medium text-gray-900">$0.05</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Current balance</span>
+                <span className="text-sm font-medium text-green-600">
+                  ${(creditBalance / 100).toFixed(2)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Pages available</span>
+                <span className="text-sm font-medium text-gray-900">
+                  {Math.floor(creditBalance / costPerPage)} pages
+                </span>
+              </div>
+              <div className="pt-4 border-t">
+                <Link
+                  to="/account-settings"
+                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium text-center block"
+                >
+                  Add Credits
+                </Link>
+              </div>
+            </div>
+          </div>
 
           {/* Processing Performance */}
           <div className="bg-white rounded-lg shadow-sm border p-6">
@@ -432,9 +424,9 @@ export default function Dashboard() {
                 <FileText className="h-16 w-16 text-gray-300 mx-auto" />
                 <h3 className="text-lg font-medium text-gray-900 mt-4">No documents processed yet</h3>
                 <p className="text-gray-500 mt-2">
-                  Upload your first PDF to start converting documents to text
+                  Upload your first PDF to start converting documents to text at $0.05 per page
                 </p>
-                {remainingPages > 0 && (
+                {hasCredits && (
                   <div className="mt-6 text-center">
                     <div className="inline-flex items-center px-4 py-2 bg-blue-50 text-blue-700 rounded-lg mb-4">
                       <Clock className="h-4 w-4 mr-2" />
@@ -447,6 +439,23 @@ export default function Dashboard() {
                       >
                         <Upload className="h-4 w-4 mr-2" />
                         Upload PDF
+                      </Link>
+                    </div>
+                  </div>
+                )}
+                {!hasCredits && (
+                  <div className="mt-6 text-center">
+                    <div className="inline-flex items-center px-4 py-2 bg-red-50 text-red-700 rounded-lg mb-4">
+                      <AlertCircle className="h-4 w-4 mr-2" />
+                      Add credits to start processing documents
+                    </div>
+                    <div>
+                      <Link
+                        to="/account-settings"
+                        className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        <Crown className="h-4 w-4 mr-2" />
+                        Add Credits
                       </Link>
                     </div>
                   </div>

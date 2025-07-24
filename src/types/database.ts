@@ -10,8 +10,8 @@ export type Json =
   | Json[]
 
 // Database enums
-export type UserStatus = 'free' | 'pay_per_use';
-export type OutputFormat = 'txt' | 'markdown' | 'docx';
+export type UserStatus = 'active' | 'inactive';
+export type OutputFormat = 'txt' | 'markdown' | 'docx' | 'json' | 'csv';
 export type ProcessingStatus = 'processing' | 'completed' | 'failed' | 'cancelled';
 
 // Database schema types
@@ -26,7 +26,7 @@ export interface Database {
           updated_at: string;
           user_status: UserStatus;
           pages_used: number;
-          pages_limit: number;
+          credit_balance: number; // Credits in cents
           stripe_customer_id: string | null;
           full_name: string | null;
         };
@@ -37,7 +37,7 @@ export interface Database {
           updated_at?: string;
           user_status?: UserStatus;
           pages_used?: number;
-          pages_limit?: number;
+          credit_balance?: number;
           stripe_customer_id?: string | null;
           full_name?: string | null;
         };
@@ -48,7 +48,7 @@ export interface Database {
           updated_at?: string;
           user_status?: UserStatus;
           pages_used?: number;
-          pages_limit?: number;
+          credit_balance?: number;
           stripe_customer_id?: string | null;
           full_name?: string | null;
         };
@@ -114,18 +114,26 @@ export interface Database {
       [_ in never]: never;
     };
     Functions: {
-      update_user_pages_usage: {
+      charge_user_credits: {
         Args: {
           user_uuid: string;
           pages_count: number;
-          is_paid?: boolean;
+          cost_per_page: number;
         };
-        Returns: boolean;
+        Returns: { success: boolean; new_balance: number };
       };
-      can_user_process_pages_free: {
+      add_user_credits: {
+        Args: {
+          user_uuid: string;
+          credit_amount: number;
+        };
+        Returns: { success: boolean; new_balance: number };
+      };
+      can_user_process_pages: {
         Args: {
           user_uuid: string;
           pages_count: number;
+          cost_per_page: number;
         };
         Returns: boolean;
       };
@@ -151,10 +159,11 @@ export type ProcessingRecordUpdate = Database['public']['Tables']['processing_hi
 
 // Extended types with calculated fields
 export type UserWithStats = User & {
-  pages_remaining: number;
-  usage_percentage: number;
-  can_upload: boolean;
+  credit_balance_formatted: string;
+  pages_available: number;
+  can_process: boolean;
   total_files_processed: number;
+  total_spent: number;
 };
 
 export type ProcessingRecordWithDuration = ProcessingRecord & {
@@ -219,6 +228,8 @@ export interface UserQueryFilters extends QueryFilters {
   user_status?: UserStatus;
   min_pages_used?: number;
   max_pages_used?: number;
+  min_credit_balance?: number;
+  max_credit_balance?: number;
 }
 
 export interface ProcessingQueryFilters extends QueryFilters {

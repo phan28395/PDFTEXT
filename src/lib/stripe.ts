@@ -15,129 +15,92 @@ export const getStripe = () => {
   return stripePromise;
 };
 
-// Pricing plans configuration
-export const PRICING_PLANS = {
-  FREE: {
-    id: 'free',
-    name: 'Free',
-    price: 0,
-    pages: 10,
-    description: '10 pages per account (lifetime)',
-    features: [
-      '10 pages per account',
-      'PDF to text conversion',
-      'Download results',
-      'Email support'
-    ]
-  },
-  PRO: {
-    id: 'pro',
-    name: 'Pro',
-    price: 9.99,
-    pages: 1000,
-    description: '1000 pages per month',
-    stripePriceId: 'price_1234567890', // This will be set from Stripe dashboard
-    features: [
-      '1000 pages per month',
-      'PDF to text conversion',
-      'Download results',
-      'Priority email support',
-      'Processing history',
-      'Bulk processing'
-    ]
-  }
+// Pay-per-use configuration
+export const PRICING_CONFIG = {
+  COST_PER_PAGE: 5, // 5 cents per page
+  MINIMUM_CREDIT_PURCHASE: 500, // $5.00 minimum
+  CREDIT_PACKAGES: [
+    { amount: 500, bonus: 0, label: '$5.00' }, // $5 = 100 pages
+    { amount: 1000, bonus: 100, label: '$10.00 + $1 bonus' }, // $10 + $1 bonus = 220 pages
+    { amount: 2500, bonus: 500, label: '$25.00 + $5 bonus' }, // $25 + $5 bonus = 600 pages
+    { amount: 5000, bonus: 1500, label: '$50.00 + $15 bonus' }, // $50 + $15 bonus = 1300 pages
+  ]
 } as const;
 
-export type PricingPlan = 'free' | 'pro';
+// Credit package type
+export interface CreditPackage {
+  amount: number;
+  bonus: number;
+  label: string;
+}
 
-// Stripe customer and subscription types
+// Stripe customer type (simplified)
 export interface StripeCustomer {
   id: string;
   email: string;
   name?: string;
-  subscription?: StripeSubscription;
 }
 
-export interface StripeSubscription {
-  id: string;
-  status: 'active' | 'canceled' | 'past_due' | 'unpaid' | 'trialing';
-  current_period_start: number;
-  current_period_end: number;
-  plan: PricingPlan;
-  cancel_at_period_end: boolean;
+// Payment session result
+export interface PaymentSession {
+  sessionId: string;
+  url?: string;
 }
 
-// Stripe service functions
-export const stripeService = {
-  // Create checkout session for subscription
-  async createCheckoutSession(planId: PricingPlan, userId: string): Promise<{ sessionId: string }> {
-    const response = await fetch('/api/stripe/create-checkout-session', {
+// Credit service functions
+export const creditService = {
+  // Create checkout session for credit purchase
+  async createCreditCheckoutSession(packageAmount: number, userId: string): Promise<PaymentSession> {
+    const response = await fetch('/api/stripe/create-credit-session', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        planId,
+        amount: packageAmount,
         userId,
-        successUrl: `${window.location.origin}/dashboard?success=true`,
-        cancelUrl: `${window.location.origin}/pricing?canceled=true`,
+        successUrl: `${window.location.origin}/dashboard?credits_added=true`,
+        cancelUrl: `${window.location.origin}/account-settings?canceled=true`,
       }),
     });
 
     if (!response.ok) {
-      throw new Error('Failed to create checkout session');
+      throw new Error('Failed to create credit checkout session');
     }
 
     return response.json();
   },
 
-  // Create portal session for subscription management
-  async createPortalSession(customerId: string): Promise<{ url: string }> {
-    const response = await fetch('/api/stripe/create-portal-session', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        customerId,
-        returnUrl: `${window.location.origin}/dashboard`,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to create portal session');
-    }
-
-    return response.json();
-  },
-
-  // Get customer subscription status
-  async getSubscription(userId: string): Promise<StripeSubscription | null> {
-    const response = await fetch(`/api/stripe/subscription?userId=${userId}`);
+  // Get user credit balance
+  async getCreditBalance(userId: string): Promise<{ balance: number }> {
+    const response = await fetch(`/api/credits/balance?userId=${userId}`);
     
     if (!response.ok) {
-      if (response.status === 404) {
-        return null; // No subscription found
-      }
-      throw new Error('Failed to fetch subscription');
+      throw new Error('Failed to fetch credit balance');
     }
 
     return response.json();
   },
 
-  // Cancel subscription
-  async cancelSubscription(subscriptionId: string): Promise<void> {
-    const response = await fetch('/api/stripe/cancel-subscription', {
+  // Process page charge
+  async chargeForPages(userId: string, pageCount: number): Promise<{ success: boolean; newBalance: number }> {
+    const response = await fetch('/api/credits/charge', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ subscriptionId }),
+      body: JSON.stringify({
+        userId,
+        pageCount,
+        costPerPage: PRICING_CONFIG.COST_PER_PAGE
+      }),
     });
 
     if (!response.ok) {
-      throw new Error('Failed to cancel subscription');
+      throw new Error('Insufficient credits or payment failed');
     }
+
+    return response.json();
   }
 };
 
@@ -149,28 +112,24 @@ export const formatPrice = (price: number): string => {
   }).format(price);
 };
 
-export const getPlanFromSubscription = (subscription: StripeSubscription): PricingPlan => {
-  return subscription.plan as PricingPlan;
+// Credit utility functions
+export const formatCredits = (credits: number): string => {
+  return formatPrice(credits / 100); // Convert cents to dollars
 };
 
-export const isSubscriptionActive = (subscription: StripeSubscription | null): boolean => {
-  if (!subscription) return false;
-  return ['active', 'trialing'].includes(subscription.status);
+export const calculatePagesFromCredits = (credits: number): number => {
+  return Math.floor(credits / PRICING_CONFIG.COST_PER_PAGE);
 };
 
-export const getSubscriptionStatusText = (status: StripeSubscription['status']): string => {
-  switch (status) {
-    case 'active':
-      return 'Active';
-    case 'trialing':
-      return 'Trial';
-    case 'past_due':
-      return 'Past Due';
-    case 'canceled':
-      return 'Canceled';
-    case 'unpaid':
-      return 'Unpaid';
-    default:
-      return 'Unknown';
-  }
+export const calculateCreditsFromPages = (pages: number): number => {
+  return pages * PRICING_CONFIG.COST_PER_PAGE;
+};
+
+export const getCreditPackageByAmount = (amount: number): CreditPackage | undefined => {
+  return PRICING_CONFIG.CREDIT_PACKAGES.find(pkg => pkg.amount === amount);
+};
+
+export const getTotalCreditsWithBonus = (packageAmount: number): number => {
+  const pkg = getCreditPackageByAmount(packageAmount);
+  return packageAmount + (pkg?.bonus || 0);
 };

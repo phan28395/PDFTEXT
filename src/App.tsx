@@ -13,7 +13,6 @@ const Register = lazy(() => import('./pages/Register'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Admin = lazy(() => import('./pages/Admin'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
-const Pricing = lazy(() => import('./pages/Pricing'));
 const Privacy = lazy(() => import('./pages/Privacy'));
 const BatchProcessing = lazy(() => import('./pages/BatchProcessing'));
 const AccountSettings = lazy(() => import('./pages/AccountSettings'));
@@ -33,7 +32,6 @@ function App() {
           <Routes>
           {/* Public routes */}
           <Route path="/" element={<Home />} />
-          <Route path="/pricing" element={<Pricing />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/features" element={<Features />} />
           <Route path="/api-docs" element={<ApiDocs />} />
