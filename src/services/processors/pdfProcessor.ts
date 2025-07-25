@@ -10,7 +10,13 @@ export class PDFProcessor implements DocumentProcessor {
   
   async analyze(file: File): Promise<DocumentMetadata> {
     // First upload the file to Supabase Storage
-    const fileName = `temp/${Date.now()}-${file.name}`;
+    // Sanitize filename to remove special characters
+    const sanitizedName = file.name
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove accents
+      .replace(/[^a-zA-Z0-9.-]/g, '_'); // Replace special chars with underscore
+    
+    const fileName = `temp/${Date.now()}-${sanitizedName}`;
     const { error: uploadError } = await this.supabase.storage
       .from('pdfs')
       .upload(fileName, file);
@@ -52,7 +58,13 @@ export class PDFProcessor implements DocumentProcessor {
   }
   
   private async uploadFile(file: File): Promise<string> {
-    const fileName = `temp/${Date.now()}-${file.name}`;
+    // Sanitize filename to remove special characters
+    const sanitizedName = file.name
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove accents
+      .replace(/[^a-zA-Z0-9.-]/g, '_'); // Replace special chars with underscore
+    
+    const fileName = `temp/${Date.now()}-${sanitizedName}`;
     const { error } = await this.supabase.storage
       .from('pdfs')
       .upload(fileName, file);
