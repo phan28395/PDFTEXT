@@ -16,8 +16,37 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import FileUpload from '@/components/FileUpload';
 
 export default function Dashboard() {
+  console.log('Dashboard: Starting render');
+  
+  // Check if environment variables are properly configured
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  
+  if (!supabaseUrl || !supabaseKey || supabaseUrl === 'your_supabase_url_here') {
+    console.error('Dashboard: Missing or invalid Supabase environment variables');
+    return (
+      <DashboardLayout>
+        <div className="p-6">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+            <AlertCircle className="h-12 w-12 text-red-600 mx-auto mb-4" />
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">Configuration Error</h2>
+            <p className="text-gray-600 mb-4">
+              The application is not properly configured. Please ensure all environment variables are set correctly.
+            </p>
+            <p className="text-sm text-gray-500">
+              Contact your administrator or check the .env file configuration.
+            </p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+  
   const { user } = useAuth();
+  console.log('Dashboard: Auth user:', user);
+  
   const { user: userData, loading: userLoading } = useUser(user?.id);
+  console.log('Dashboard: User data:', userData, 'Loading:', userLoading);
 
   // Calculate usage statistics - pay per use model with free trial
   const creditBalance = userData?.credit_balance || 0; // Credits in cents
@@ -39,12 +68,15 @@ export default function Dashboard() {
     return 'bg-green-50 border-green-200 text-green-600';
   };
 
-  return (
-    <DashboardLayout>
-      <ErrorBoundary>
-        <div className="p-6 space-y-6">
-          {/* Quick Upload Section */}
-          {hasCredits && (
+  console.log('Dashboard: Rendering with hasCredits:', hasCredits);
+
+  try {
+    return (
+      <DashboardLayout>
+        <ErrorBoundary>
+          <div className="p-6 space-y-6">
+            {/* Quick Upload Section */}
+            {hasCredits && (
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-100">
               <div className="max-w-3xl mx-auto">
                 <div className="text-center mb-6">
@@ -297,4 +329,8 @@ export default function Dashboard() {
       </ErrorBoundary>
     </DashboardLayout>
   );
+  } catch (error) {
+    console.error('Dashboard: Error during render:', error);
+    throw error;
+  }
 }
