@@ -13,7 +13,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUser } from '@/hooks/useDatabase';
 import { DashboardLayout } from '@/components/Layout';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import FileUpload from '@/components/FileUpload';
+import FileUploadNew from '@/components/FileUploadNew';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -58,7 +58,7 @@ export default function Dashboard() {
                     }
                   </p>
                 </div>
-                <FileUpload 
+                <FileUploadNew 
                   className="max-w-2xl mx-auto"
                   onUploadComplete={(result) => {
                     // Refresh stats and recent records after successful upload
