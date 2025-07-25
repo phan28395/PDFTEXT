@@ -11,11 +11,17 @@ export class CloudinaryService {
   private uploadPreset: string;
 
   constructor() {
-    this.cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-    this.uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+    this.cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || '';
+    this.uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || '';
     
-    if (!this.cloudName || !this.uploadPreset) {
-      throw new Error('Cloudinary configuration is missing. Please check your environment variables.');
+    if (!this.cloudName || this.cloudName === 'your_cloudinary_cloud_name_here') {
+      console.error('Cloudinary cloud name is not configured');
+      throw new Error('Cloudinary cloud name is not configured. Please add VITE_CLOUDINARY_CLOUD_NAME to your environment variables.');
+    }
+    
+    if (!this.uploadPreset || this.uploadPreset === 'pdf_uploads') {
+      console.warn('Cloudinary upload preset not configured, using default: pdf_uploads');
+      this.uploadPreset = 'pdf_uploads';
     }
   }
 

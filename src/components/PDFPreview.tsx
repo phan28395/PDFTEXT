@@ -7,7 +7,7 @@ interface PDFPreviewProps {
   onPageRangeSelect: (start: number, end: number) => void;
 }
 
-export function PDFPreview({ publicId, totalPages, onPageRangeSelect }: PDFPreviewProps) {
+export default function PDFPreview({ publicId, totalPages, onPageRangeSelect }: PDFPreviewProps) {
   const cloudinary = new CloudinaryService();
   const [selectedRange, setSelectedRange] = useState({ start: 1, end: totalPages });
   const [isProcessing, setIsProcessing] = useState(false);
@@ -101,7 +101,7 @@ export function PDFPreview({ publicId, totalPages, onPageRangeSelect }: PDFPrevi
         <button
           onClick={handleProcess}
           disabled={isProcessing}
-          className="w-full px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isProcessing ? 'Processing...' : `Process ${selectedRange.end - selectedRange.start + 1} page(s)`}
         </button>

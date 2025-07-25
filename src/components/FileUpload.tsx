@@ -8,6 +8,8 @@ import DocumentPreview from './DocumentPreview/DocumentPreview';
 import { SelectionRange } from '@/types/document';
 import { useAuth } from '@/hooks/useAuth';
 import { useUser } from '@/hooks/useDatabase';
+import { CloudinaryService } from '@/services/cloudinary';
+import PDFPreview from './PDFPreview';
 
 interface FileUploadProps {
   onFileSelect?: (file: File) => void;
@@ -46,6 +48,14 @@ export default function FileUpload({
   // Document preview state
   const [showDocumentPreview, setShowDocumentPreview] = useState(false);
   const [selectedPageRange, setSelectedPageRange] = useState<{start: number, end: number, total: number} | null>(null);
+  
+  // Cloudinary state
+  const [cloudinaryUpload, setCloudinaryUpload] = useState<{
+    publicId: string;
+    url: string;
+    pages: number;
+  } | null>(null);
+  const [uploadingToCloudinary, setUploadingToCloudinary] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -86,10 +96,11 @@ export default function FileUpload({
   };
 
   // Handle file selection
-  const handleFile = (file: File) => {
+  const handleFile = async (file: File) => {
     setValidationError(null);
     setProcessingResult(null);
     setProcessingError(null);
+    setCloudinaryUpload(null);
     
     const error = validateFile(file);
     if (error) {
@@ -102,17 +113,47 @@ export default function FileUpload({
       preview: URL.createObjectURL(file)
     });
 
-    // Estimate pages and show cost preview
-    const estimatedPageCount = estimatePagesFromSize(file.size);
-    setEstimatedPages(estimatedPageCount);
     setSelectedFile(fileWithPreview);
-    setShowCostPreview(true);
     
-    // Show Document Preview for supported files
-    setShowDocumentPreview(true);
+    // Check if Cloudinary is configured
+    try {
+      // Try to initialize Cloudinary to check if it's configured
+      new CloudinaryService();
+    } catch (error) {
+      console.warn('Cloudinary not configured, using direct upload');
+      // Estimate pages and proceed without Cloudinary preview
+      const estimatedPageCount = estimatePagesFromSize(file.size);
+      setEstimatedPages(estimatedPageCount);
+      setShowCostPreview(true);
+      onFileSelect?.(file);
+      toast.success(`File "${file.name}" selected successfully`);
+      return;
+    }
     
-    onFileSelect?.(file);
-    toast.success(`File "${file.name}" selected successfully`);
+    // Upload to Cloudinary
+    setUploadingToCloudinary(true);
+    try {
+      const cloudinary = new CloudinaryService();
+      const uploadResult = await cloudinary.uploadPDF(file);
+      setCloudinaryUpload(uploadResult);
+      
+      // Use actual page count from Cloudinary
+      setEstimatedPages(uploadResult.pages);
+      setShowCostPreview(true);
+      
+      // Show PDF Preview using Cloudinary
+      setShowDocumentPreview(true);
+      
+      onFileSelect?.(file);
+      toast.success(`File "${file.name}" uploaded successfully`);
+    } catch (error) {
+      console.error('Cloudinary upload error:', error);
+      toast.error('Failed to upload file. Please try again.');
+      setValidationError(error.message);
+      removeFile();
+    } finally {
+      setUploadingToCloudinary(false);
+    }
   };
 
   // Handle cloud file selection
@@ -177,6 +218,7 @@ export default function FileUpload({
     setSelectedDownloadFormat('combined');
     setShowCostPreview(false);
     setEstimatedPages(null);
+    setCloudinaryUpload(null);
     
     // Reset document preview state
     setShowDocumentPreview(false);
@@ -405,18 +447,19 @@ export default function FileUpload({
             )}
 
             {/* Document Preview */}
-            {showDocumentPreview && selectedFile && (
+            {showDocumentPreview && selectedFile && cloudinaryUpload && (
               <div className="mt-4">
-                <DocumentPreview
-                  file={selectedFile}
-                  onConfirm={async (range: SelectionRange) => {
+                <PDFPreview
+                  publicId={cloudinaryUpload.publicId}
+                  totalPages={cloudinaryUpload.pages}
+                  onPageRangeSelect={(start, end) => {
                     // Update selected page range
-                    const pagesToProcess = range.all ? estimatedPages! : (range.end - range.start + 1);
+                    const pagesToProcess = end - start + 1;
                     setEstimatedPages(pagesToProcess);
                     setSelectedPageRange({
-                      start: range.start,
-                      end: range.end,
-                      total: estimatedPages!
+                      start,
+                      end,
+                      total: cloudinaryUpload.pages
                     });
                     
                     // Hide preview and show upload button
@@ -654,11 +697,13 @@ export default function FileUpload({
         )}
 
         {/* Loading Overlay */}
-        {uploading && (
+        {(uploading || uploadingToCloudinary) && (
           <div className="absolute inset-0 bg-white bg-opacity-75 rounded-lg flex items-center justify-center">
             <div className="text-center">
               <Loader2 className="h-8 w-8 text-blue-600 animate-spin mx-auto" />
-              <p className="text-sm text-gray-600 mt-2">Processing your PDF...</p>
+              <p className="text-sm text-gray-600 mt-2">
+                {uploadingToCloudinary ? 'Uploading to cloud...' : 'Processing your PDF...'}
+              </p>
             </div>
           </div>
         )}
