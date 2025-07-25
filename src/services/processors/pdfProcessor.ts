@@ -1,14 +1,11 @@
 import { DocumentProcessor, DocumentMetadata, SelectionRange, PreviewData } from '@/types/document';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 
 export class PDFProcessor implements DocumentProcessor {
   private supabase;
   
   constructor() {
-    this.supabase = createClient(
-      import.meta.env.VITE_SUPABASE_URL || '',
-      import.meta.env.VITE_SUPABASE_ANON_KEY || ''
-    );
+    this.supabase = supabase;
   }
   
   async analyze(file: File): Promise<DocumentMetadata> {
