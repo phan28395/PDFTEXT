@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ProcessedDocument, MathematicalContent, ImageContent, TableContent } from '../lib/documentai';
+import { ProcessedDocument, MathematicalContent, ImageContent, TableContent } from '@/types/documentai';
 import OutputFormatGenerator from './OutputFormatGenerator';
 
 interface EnhancedProcessingResultsProps {

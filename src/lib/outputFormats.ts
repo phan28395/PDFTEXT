@@ -1,4 +1,4 @@
-import { ProcessedDocument, DocumentStructure, MathematicalContent, ImageContent, TableContent } from './documentai';
+import { ProcessedDocument, DocumentStructure, MathematicalContent, ImageContent, TableContent } from '@/types/documentai';
 
 export interface OutputGenerationOptions {
   format: 'txt' | 'markdown' | 'docx';
