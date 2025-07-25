@@ -42,11 +42,26 @@ export default function Dashboard() {
     );
   }
   
-  const { user } = useAuth();
-  console.log('Dashboard: Auth user:', user);
+  let user, userData, userLoading;
   
-  const { user: userData, loading: userLoading } = useUser(user?.id);
-  console.log('Dashboard: User data:', userData, 'Loading:', userLoading);
+  try {
+    const authData = useAuth();
+    user = authData.user;
+    console.log('Dashboard: Auth user:', user);
+  } catch (error) {
+    console.error('Dashboard: Error in useAuth hook:', error);
+    throw new Error(`useAuth hook failed: ${error.message}`);
+  }
+  
+  try {
+    const userResult = useUser(user?.id);
+    userData = userResult.user;
+    userLoading = userResult.loading;
+    console.log('Dashboard: User data:', userData, 'Loading:', userLoading);
+  } catch (error) {
+    console.error('Dashboard: Error in useUser hook:', error);
+    throw new Error(`useUser hook failed: ${error.message}`);
+  }
 
   // Calculate usage statistics - pay per use model with free trial
   const creditBalance = userData?.credit_balance || 0; // Credits in cents
@@ -90,14 +105,18 @@ export default function Dashboard() {
                     }
                   </p>
                 </div>
-                <FileUpload 
+                {/* Temporarily comment out FileUpload to isolate the issue */}
+                <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg border-2 border-dashed border-gray-300 text-center">
+                  <p className="text-gray-500">FileUpload component temporarily disabled for debugging</p>
+                </div>
+                {/* <FileUpload 
                   className="max-w-2xl mx-auto"
                   onUploadComplete={(result) => {
                     // Refresh stats and recent records after successful upload
                     // This will be handled by the hooks automatically
                     console.log('Processing completed:', result);
                   }}
-                />
+                /> */}
               </div>
             </div>
           )}

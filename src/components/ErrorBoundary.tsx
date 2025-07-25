@@ -34,10 +34,10 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       errorInfo
     });
 
-    // Log to console in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error Boundary caught an error:', error, errorInfo);
-    }
+    // Always log to console for debugging
+    console.error('Error Boundary caught an error:', error, errorInfo);
+    console.error('Error stack:', error.stack);
+    console.error('Component stack:', errorInfo.componentStack);
 
     // Call custom error handler if provided
     this.props.onError?.(error, errorInfo);
@@ -94,8 +94,8 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
               </Link>
             </div>
 
-            {/* Show error details in development */}
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {/* Always show error details for debugging */}
+            {this.state.error && (
               <details className="mt-6 text-left">
                 <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900 flex items-center">
                   <Bug className="h-4 w-4 mr-1" />
