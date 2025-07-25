@@ -545,7 +545,8 @@ function extractTableContent(table: any, documentText: string, pageNumber: numbe
     headers,
     rows,
     page: pageNumber,
-    confidence: 0.9 // Default table confidence
+    confidence: 0.9, // Default table confidence
+    isStructured: false // Add missing property
   };
 }
 

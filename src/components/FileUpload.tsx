@@ -4,8 +4,6 @@ import toast from 'react-hot-toast';
 import { processPDF, validateFile as apiValidateFile, ProcessingResult, ProcessingError, downloadTextFile, formatFileSize, formatProcessingTime } from '@/api/processing';
 import CloudStoragePicker from './CloudStoragePicker';
 import DocumentTypeSelector, { DocumentType } from './DocumentTypeSelector';
-import PDFViewer, { OutputFormat } from './PDFViewer';
-import SimplePDFViewer from './SimplePDFViewer';
 import DocumentPreview from './DocumentPreview/DocumentPreview';
 import { SelectionRange } from '@/types/document';
 import { useAuth } from '@/hooks/useAuth';
@@ -45,16 +43,9 @@ export default function FileUpload({
   const [showCostPreview, setShowCostPreview] = useState(false);
   const [estimatedPages, setEstimatedPages] = useState<number | null>(null);
   
-  // PDF viewer state
-  const [showPDFViewer, setShowPDFViewer] = useState(false);
-  const [useSimplePDFViewer, setUseSimplePDFViewer] = useState(false);
+  // Document preview state
   const [showDocumentPreview, setShowDocumentPreview] = useState(false);
   const [selectedPageRange, setSelectedPageRange] = useState<{start: number, end: number, total: number} | null>(null);
-  const [selectedOutputFormat, setSelectedOutputFormat] = useState<OutputFormat>({
-    type: 'text',
-    name: 'Plain Text',
-    description: 'Simple text format (.txt)'
-  });
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -187,16 +178,9 @@ export default function FileUpload({
     setShowCostPreview(false);
     setEstimatedPages(null);
     
-    // Reset PDF viewer state
-    setShowPDFViewer(false);
-    setUseSimplePDFViewer(false);
+    // Reset document preview state
     setShowDocumentPreview(false);
     setSelectedPageRange(null);
-    setSelectedOutputFormat({
-      type: 'text',
-      name: 'Plain Text',
-      description: 'Simple text format (.txt)'
-    });
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -220,7 +204,7 @@ export default function FileUpload({
           setUploadProgress(progress);
         },
         selectedPageRange ? { start: selectedPageRange.start, end: selectedPageRange.end } : undefined,
-        selectedOutputFormat.type
+        'text'
       );
 
       setProcessingResult(result);
@@ -254,19 +238,6 @@ export default function FileUpload({
     }
   };
 
-  // Handle PDF viewer page range selection
-  const handlePageRangeSelect = (startPage: number, endPage: number, totalPages: number) => {
-    setSelectedPageRange({ start: startPage, end: endPage, total: totalPages });
-    
-    // Update estimated pages and cost based on selected range
-    const pagesToProcess = endPage - startPage + 1;
-    setEstimatedPages(pagesToProcess);
-  };
-
-  // Handle output format selection
-  const handleFormatSelect = (format: OutputFormat) => {
-    setSelectedOutputFormat(format);
-  };
 
 
   return (
@@ -455,36 +426,6 @@ export default function FileUpload({
               </div>
             )}
             
-            {/* Legacy PDF Viewer (fallback) */}
-            {showPDFViewer && !showDocumentPreview && selectedFile && selectedFile.type === 'application/pdf' && (
-              <div className="mt-4">
-                {useSimplePDFViewer ? (
-                  <SimplePDFViewer
-                    file={selectedFile}
-                    onPageRangeSelect={handlePageRangeSelect}
-                    onFormatSelect={handleFormatSelect}
-                    className="border rounded-lg"
-                  />
-                ) : (
-                  <div className="space-y-3">
-                    <PDFViewer
-                      file={selectedFile}
-                      onPageRangeSelect={handlePageRangeSelect}
-                      onFormatSelect={handleFormatSelect}
-                      className="border rounded-lg"
-                    />
-                    <div className="text-center">
-                      <button
-                        onClick={() => setUseSimplePDFViewer(true)}
-                        className="text-sm text-blue-600 hover:text-blue-700 underline"
-                      >
-                        Having trouble viewing the PDF? Try the simplified viewer
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
 
             {/* Upload Progress */}
             {uploading && (

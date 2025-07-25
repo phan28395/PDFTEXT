@@ -1,77 +1,81 @@
 import { DocumentProcessor, DocumentMetadata, SelectionRange, PreviewData } from '@/types/document';
-import { supabase } from '@/lib/supabase';
+import { CloudinaryService } from '@/services/cloudinary';
+import { DocumentAI } from '@/services/documentai';
 
 export class PDFProcessor implements DocumentProcessor {
-  private supabase;
+  private cloudinary: CloudinaryService;
+  private documentAI: DocumentAI;
   
   constructor() {
-    this.supabase = supabase;
+    this.cloudinary = new CloudinaryService();
+    this.documentAI = new DocumentAI();
   }
   
   async analyze(file: File): Promise<DocumentMetadata> {
-    // First upload the file to Supabase Storage
-    // Sanitize filename to remove special characters
-    const sanitizedName = file.name
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '') // Remove accents
-      .replace(/[^a-zA-Z0-9.-]/g, '_'); // Replace special chars with underscore
+    // Upload PDF to Cloudinary
+    const { publicId, pages } = await this.cloudinary.uploadPDF(file);
     
-    const fileName = `temp/${Date.now()}-${sanitizedName}`;
-    const { error: uploadError } = await this.supabase.storage
-      .from('pdfs')
-      .upload(fileName, file);
-    
-    if (uploadError) throw uploadError;
-    
-    // Call Supabase Edge Function to analyze
-    const { data, error } = await this.supabase.functions.invoke('process-pdf', {
-      body: { 
-        action: 'analyze',
-        fileName 
-      }
-    });
-    
-    if (error) throw error;
-    
-    // Store the fileName for later use
-    (data as any).storagePath = fileName;
-    
-    return data;
+    return {
+      type: 'pdf',
+      totalUnits: pages,
+      unitName: 'pages',
+      fileName: file.name,
+      fileSize: file.size,
+      cloudinaryPublicId: publicId
+    };
   }
   
   async generatePreview(file: File | any, range: SelectionRange): Promise<PreviewData> {
-    // If file has storagePath, it's already uploaded
-    const fileName = file.storagePath || await this.uploadFile(file);
+    // If file has cloudinaryPublicId, it's already uploaded
+    const publicId = file.cloudinaryPublicId || (await this.cloudinary.uploadPDF(file)).publicId;
+    const metadata = file.cloudinaryPublicId ? file : await this.analyze(file);
     
-    // Call Supabase Edge Function
-    const { data, error } = await this.supabase.functions.invoke('process-pdf', {
-      body: { 
-        action: 'preview',
-        fileName,
-        range 
-      }
+    // Generate preview URLs for the requested range
+    const units = [];
+    const start = range.start;
+    const end = range.end;
+    
+    // Show first page
+    units.push({
+      index: start,
+      imageUrl: this.cloudinary.getPreviewUrl(publicId, start),
+      thumbnail: this.cloudinary.getPreviewUrl(publicId, start, 200)
     });
     
-    if (error) throw error;
+    // If range spans multiple pages, add gap indicator
+    if (end - start > 1) {
+      units.push({
+        index: -1,
+        imageUrl: '',
+        thumbnail: '',
+        isGap: true,
+        startPage: start + 1,
+        endPage: end - 1,
+        count: end - start - 1
+      });
+    }
     
-    return data;
+    // Show last page if different from first
+    if (end > start) {
+      units.push({
+        index: end,
+        imageUrl: this.cloudinary.getPreviewUrl(publicId, end),
+        thumbnail: this.cloudinary.getPreviewUrl(publicId, end, 200)
+      });
+    }
+    
+    return {
+      units,
+      processingTime: Date.now()
+    };
   }
   
-  private async uploadFile(file: File): Promise<string> {
-    // Sanitize filename to remove special characters
-    const sanitizedName = file.name
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '') // Remove accents
-      .replace(/[^a-zA-Z0-9.-]/g, '_'); // Replace special chars with underscore
-    
-    const fileName = `temp/${Date.now()}-${sanitizedName}`;
-    const { error } = await this.supabase.storage
-      .from('pdfs')
-      .upload(fileName, file);
-    
-    if (error) throw error;
-    
-    return fileName;
+  async processPages(publicId: string, startPage: number, endPage: number): Promise<string> {
+    // Process the specified page range using Document AI
+    return await this.documentAI.processFromCloudinary(publicId, {
+      start: startPage,
+      end: endPage
+    });
   }
   
   estimateCost(metadata: DocumentMetadata, range: SelectionRange): number {

@@ -8,6 +8,7 @@ export interface DocumentMetadata {
   fileSize: number;
   dimensions?: { width: number; height: number };
   additionalInfo?: Record<string, any>;
+  cloudinaryPublicId?: string; // Cloudinary public ID for the uploaded document
 }
 
 export interface DocumentProcessor {
@@ -33,4 +34,9 @@ export interface PreviewUnit {
   thumbnail: string;
   text?: string;  // Extracted text preview
   metadata?: any;
+  isPDF?: boolean; // Flag to indicate if this is a PDF (not converted to image)
+  isGap?: boolean; // For gap indicators between pages
+  startPage?: number;
+  endPage?: number;
+  count?: number;
 }
