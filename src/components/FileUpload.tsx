@@ -6,6 +6,8 @@ import CloudStoragePicker from './CloudStoragePicker';
 import DocumentTypeSelector, { DocumentType } from './DocumentTypeSelector';
 import PDFViewer, { OutputFormat } from './PDFViewer';
 import SimplePDFViewer from './SimplePDFViewer';
+import DocumentPreview from './DocumentPreview/DocumentPreview';
+import { SelectionRange } from '@/types/document';
 import { useAuth } from '@/hooks/useAuth';
 import { useUser } from '@/hooks/useDatabase';
 
@@ -46,6 +48,7 @@ export default function FileUpload({
   // PDF viewer state
   const [showPDFViewer, setShowPDFViewer] = useState(false);
   const [useSimplePDFViewer, setUseSimplePDFViewer] = useState(false);
+  const [showDocumentPreview, setShowDocumentPreview] = useState(false);
   const [selectedPageRange, setSelectedPageRange] = useState<{start: number, end: number, total: number} | null>(null);
   const [selectedOutputFormat, setSelectedOutputFormat] = useState<OutputFormat>({
     type: 'text',
@@ -114,10 +117,8 @@ export default function FileUpload({
     setSelectedFile(fileWithPreview);
     setShowCostPreview(true);
     
-    // Show PDF viewer for PDF files
-    if (file.type === 'application/pdf') {
-      setShowPDFViewer(true);
-    }
+    // Show Document Preview for supported files
+    setShowDocumentPreview(true);
     
     onFileSelect?.(file);
     toast.success(`File "${file.name}" selected successfully`);
@@ -189,6 +190,7 @@ export default function FileUpload({
     // Reset PDF viewer state
     setShowPDFViewer(false);
     setUseSimplePDFViewer(false);
+    setShowDocumentPreview(false);
     setSelectedPageRange(null);
     setSelectedOutputFormat({
       type: 'text',
@@ -431,8 +433,30 @@ export default function FileUpload({
               </div>
             )}
 
-            {/* PDF Viewer */}
-            {showPDFViewer && selectedFile && selectedFile.type === 'application/pdf' && (
+            {/* Document Preview */}
+            {showDocumentPreview && selectedFile && (
+              <div className="mt-4">
+                <DocumentPreview
+                  file={selectedFile}
+                  onConfirm={async (range: SelectionRange) => {
+                    // Update selected page range
+                    const pagesToProcess = range.all ? estimatedPages! : (range.end - range.start + 1);
+                    setEstimatedPages(pagesToProcess);
+                    setSelectedPageRange({
+                      start: range.start,
+                      end: range.end,
+                      total: estimatedPages!
+                    });
+                    
+                    // Hide preview and show upload button
+                    setShowDocumentPreview(false);
+                  }}
+                />
+              </div>
+            )}
+            
+            {/* Legacy PDF Viewer (fallback) */}
+            {showPDFViewer && !showDocumentPreview && selectedFile && selectedFile.type === 'application/pdf' && (
               <div className="mt-4">
                 {useSimplePDFViewer ? (
                   <SimplePDFViewer
