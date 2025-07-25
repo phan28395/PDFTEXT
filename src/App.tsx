@@ -24,6 +24,7 @@ const About = lazy(() => import('./pages/About'));
 const Terms = lazy(() => import('./pages/Terms'));
 const Contact = lazy(() => import('./pages/Contact'));
 const AuthDebug = lazy(() => import('./pages/AuthDebug'));
+const UserProfile = lazy(() => import('./pages/UserProfile'));
 
 function App() {
   return (
@@ -110,6 +111,14 @@ function App() {
             element={
               <ProtectedRoute requireAuth={true} redirectTo="/login">
                 <UsageHistory />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/profile" 
+            element={
+              <ProtectedRoute requireAuth={true} redirectTo="/login">
+                <UserProfile />
               </ProtectedRoute>
             } 
           />
