@@ -120,56 +120,6 @@ export default function Dashboard() {
         )}
 
 
-        {/* Quick Actions */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Link
-              to="/batch-processing"
-              className="flex items-center p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <div className="flex-shrink-0 mr-4">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <FileText className="h-6 w-6 text-purple-600" />
-                </div>
-              </div>
-              <div>
-                <h3 className="font-medium text-gray-900">Batch Processing</h3>
-                <p className="text-sm text-gray-600 mt-1">Process multiple PDFs at once</p>
-              </div>
-            </Link>
-
-            <Link
-              to="/usage-history"
-              className="flex items-center p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <div className="flex-shrink-0 mr-4">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Clock className="h-6 w-6 text-blue-600" />
-                </div>
-              </div>
-              <div>
-                <h3 className="font-medium text-gray-900">Usage History</h3>
-                <p className="text-sm text-gray-600 mt-1">View past conversions</p>
-              </div>
-            </Link>
-
-            <Link
-              to="/account-settings"
-              className="flex items-center p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <div className="flex-shrink-0 mr-4">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Plus className="h-6 w-6 text-green-600" />
-                </div>
-              </div>
-              <div>
-                <h3 className="font-medium text-gray-900">Add Credits</h3>
-                <p className="text-sm text-gray-600 mt-1">Purchase more processing credits</p>
-              </div>
-            </Link>
-          </div>
-        </div>
 
         {/* No Credits Message */}
         {!hasCredits && (
