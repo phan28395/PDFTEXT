@@ -23,6 +23,7 @@ const Security = lazy(() => import('./pages/Security'));
 const About = lazy(() => import('./pages/About'));
 const Terms = lazy(() => import('./pages/Terms'));
 const Contact = lazy(() => import('./pages/Contact'));
+const AuthDebug = lazy(() => import('./pages/AuthDebug'));
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/auth-debug" element={<AuthDebug />} />
           
           {/* Auth routes - redirect to dashboard if already authenticated */}
           <Route 
