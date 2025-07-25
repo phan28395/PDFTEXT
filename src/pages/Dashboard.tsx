@@ -70,20 +70,6 @@ export default function Dashboard() {
             </div>
           )}
         
-          {/* Welcome Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-              Welcome back, {user?.email?.split('@')[0] || 'User'}!
-            </h1>
-            <p className="text-gray-600 mt-1">
-              {isTrialUser ? 
-                `${freePages} free pages remaining, then $0.012 per page` :
-                'Process PDFs with our pay-per-use model at $0.012 per page'
-              }
-            </p>
-          </div>
-        </div>
 
         {/* Free Trial or Credit Balance Alert */}
         {isTrialUser && freePages <= 2 && (
