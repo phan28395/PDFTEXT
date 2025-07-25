@@ -16,52 +16,8 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import FileUpload from '@/components/FileUpload';
 
 export default function Dashboard() {
-  console.log('Dashboard: Starting render');
-  
-  // Check if environment variables are properly configured
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  
-  if (!supabaseUrl || !supabaseKey || supabaseUrl === 'your_supabase_url_here') {
-    console.error('Dashboard: Missing or invalid Supabase environment variables');
-    return (
-      <DashboardLayout>
-        <div className="p-6">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-            <AlertCircle className="h-12 w-12 text-red-600 mx-auto mb-4" />
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">Configuration Error</h2>
-            <p className="text-gray-600 mb-4">
-              The application is not properly configured. Please ensure all environment variables are set correctly.
-            </p>
-            <p className="text-sm text-gray-500">
-              Contact your administrator or check the .env file configuration.
-            </p>
-          </div>
-        </div>
-      </DashboardLayout>
-    );
-  }
-  
-  let user, userData, userLoading;
-  
-  try {
-    const authData = useAuth();
-    user = authData.user;
-    console.log('Dashboard: Auth user:', user);
-  } catch (error) {
-    console.error('Dashboard: Error in useAuth hook:', error);
-    throw new Error(`useAuth hook failed: ${error.message}`);
-  }
-  
-  try {
-    const userResult = useUser(user?.id);
-    userData = userResult.user;
-    userLoading = userResult.loading;
-    console.log('Dashboard: User data:', userData, 'Loading:', userLoading);
-  } catch (error) {
-    console.error('Dashboard: Error in useUser hook:', error);
-    throw new Error(`useUser hook failed: ${error.message}`);
-  }
+  const { user } = useAuth();
+  const { user: userData, loading: userLoading } = useUser(user?.id);
 
   // Calculate usage statistics - pay per use model with free trial
   const creditBalance = userData?.credit_balance || 0; // Credits in cents
@@ -83,10 +39,7 @@ export default function Dashboard() {
     return 'bg-green-50 border-green-200 text-green-600';
   };
 
-  console.log('Dashboard: Rendering with hasCredits:', hasCredits);
-
-  try {
-    return (
+  return (
       <DashboardLayout>
         <ErrorBoundary>
           <div className="p-6 space-y-6">
@@ -105,18 +58,14 @@ export default function Dashboard() {
                     }
                   </p>
                 </div>
-                {/* Temporarily comment out FileUpload to isolate the issue */}
-                <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg border-2 border-dashed border-gray-300 text-center">
-                  <p className="text-gray-500">FileUpload component temporarily disabled for debugging</p>
-                </div>
-                {/* <FileUpload 
+                <FileUpload 
                   className="max-w-2xl mx-auto"
                   onUploadComplete={(result) => {
                     // Refresh stats and recent records after successful upload
                     // This will be handled by the hooks automatically
                     console.log('Processing completed:', result);
                   }}
-                /> */}
+                />
               </div>
             </div>
           )}
@@ -348,8 +297,4 @@ export default function Dashboard() {
       </ErrorBoundary>
     </DashboardLayout>
   );
-  } catch (error) {
-    console.error('Dashboard: Error during render:', error);
-    throw error;
-  }
 }
