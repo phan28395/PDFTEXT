@@ -41,11 +41,15 @@ export const getUserProfile = async (userId: string): Promise<DatabaseResponse<U
       .eq('processing_status', 'completed');
 
     // Get total amount spent
-    const { data: totalSpentData } = await supabase
+    const { data: totalSpentData, error: spentError } = await supabase
       .from('processing_history')
       .select('payment_amount')
       .eq('user_id', userId)
       .eq('was_paid', true);
+    
+    if (spentError) {
+      console.error('Error fetching payment data:', spentError);
+    }
 
     const totalSpent = totalSpentData?.reduce((sum, record) => sum + (record.payment_amount || 0), 0) || 0;
 

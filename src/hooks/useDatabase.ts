@@ -88,7 +88,7 @@ export const useUser = (userId?: string) => {
   }, [fetchUser]);
 
   useEffect(() => {
-    if (userId) {
+    if (userId && userId !== 'undefined') {
       fetchUser(userId);
     }
   }, [userId, fetchUser]);
