@@ -46,12 +46,6 @@ export default function Header({ className = '' }: HeaderProps) {
                 >
                   Dashboard
                 </Link>
-                <Link
-                  to="/batch"
-                  className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
-                >
-                  Batch Processing
-                </Link>
                 <div className="flex items-center space-x-3">
                   <div className="flex items-center space-x-2 text-gray-700">
                     <User className="h-4 w-4" />
@@ -109,13 +103,6 @@ export default function Header({ className = '' }: HeaderProps) {
                     onClick={closeMenu}
                   >
                     Dashboard
-                  </Link>
-                  <Link
-                    to="/batch"
-                    className="text-gray-700 hover:text-blue-600 font-medium px-2 py-1"
-                    onClick={closeMenu}
-                  >
-                    Batch Processing
                   </Link>
                   <div className="flex items-center space-x-2 text-gray-700 px-2">
                     <User className="h-4 w-4" />
