@@ -168,11 +168,130 @@ export default function Dashboard() {
             </div>
           </div>
 
+          {/* Pages Processed */}
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Pages Processed</p>
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900">
+                  {statsLoading ? '...' : pagesUsed}
+                </p>
+                <p className="text-sm text-gray-500">Total pages</p>
+              </div>
+              <div className="p-3 bg-blue-100 rounded-lg">
+                <BarChart3 className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
+              </div>
+            </div>
+          </div>
 
+          {/* Files Processed */}
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Files Processed</p>
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900">
+                  {statsLoading ? '...' : stats.totalFiles}
+                </p>
+                <p className="text-sm text-gray-500">Total files</p>
+              </div>
+              <div className="p-3 bg-indigo-100 rounded-lg">
+                <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-600" />
+              </div>
+            </div>
+          </div>
 
+          {/* Last Active */}
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Last Active</p>
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900">
+                  {userData?.updated_at ? new Date(userData.updated_at).toLocaleDateString() : 'Today'}
+                </p>
+                <p className="text-sm text-gray-500">Recent activity</p>
+              </div>
+              <div className="p-3 bg-gray-100 rounded-lg">
+                <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-gray-600" />
+              </div>
+            </div>
+          </div>
         </div>
 
+        {/* Quick Actions */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Link
+              to="/batch-processing"
+              className="flex items-center p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <div className="flex-shrink-0 mr-4">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <FileText className="h-6 w-6 text-purple-600" />
+                </div>
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-900">Batch Processing</h3>
+                <p className="text-sm text-gray-600 mt-1">Process multiple PDFs at once</p>
+              </div>
+            </Link>
 
+            <Link
+              to="/usage-history"
+              className="flex items-center p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <div className="flex-shrink-0 mr-4">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Clock className="h-6 w-6 text-blue-600" />
+                </div>
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-900">Usage History</h3>
+                <p className="text-sm text-gray-600 mt-1">View past conversions</p>
+              </div>
+            </Link>
+
+            <Link
+              to="/account-settings"
+              className="flex items-center p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <div className="flex-shrink-0 mr-4">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <Plus className="h-6 w-6 text-green-600" />
+                </div>
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-900">Add Credits</h3>
+                <p className="text-sm text-gray-600 mt-1">Purchase more processing credits</p>
+              </div>
+            </Link>
+          </div>
+        </div>
+
+        {/* No Credits Message */}
+        {!hasCredits && (
+          <div className="bg-gray-50 rounded-lg p-8 text-center">
+            <div className="max-w-md mx-auto">
+              <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {isTrialUser ? 'Free Trial Completed' : 'No Credits Available'}
+              </h3>
+              <p className="text-gray-600 mb-6">
+                {isTrialUser ? 
+                  'You\'ve used all your free pages. Add credits to continue processing PDFs at just $0.012 per page.' :
+                  'You need credits to process PDF files. Add credits to get started.'
+                }
+              </p>
+              <Link
+                to="/account-settings"
+                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Credits Now
+              </Link>
+            </div>
+          </div>
+        )}
 
         </div>
       </ErrorBoundary>
