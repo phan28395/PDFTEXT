@@ -39,8 +39,8 @@ let initError = null;
 try {
   if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
     const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
-    // Use EU endpoint for better Math OCR support (as per working script)
-    const location = process.env.GOOGLE_DOCUMENT_AI_LOCATION || 'eu';
+    // Use location from environment or default to 'us'
+    const location = process.env.GOOGLE_DOCUMENT_AI_LOCATION || 'us';
     const apiEndpoint = `${location}-documentai.googleapis.com`;
     
     client = new DocumentProcessorServiceClient({
@@ -179,7 +179,7 @@ Page 2 content would appear here...
     const fileBuffer = fs.readFileSync(file.filepath);
     
     // Prepare the document for Google Document AI
-    const location = process.env.GOOGLE_DOCUMENT_AI_LOCATION || 'eu';
+    const location = process.env.GOOGLE_DOCUMENT_AI_LOCATION || 'us';
     const processorName = `projects/${process.env.GOOGLE_CLOUD_PROJECT_ID}/locations/${location}/processors/${process.env.GOOGLE_DOCUMENT_AI_PROCESSOR_ID}`;
     
     // Extract form fields for new parameters
@@ -334,21 +334,13 @@ Page 2 content would appear here...
         processedPages = [{ pageNumber: 1, text: totalText, confidence: totalConfidence }];
       }
       
-      // Process math formulas from entities if Math OCR was enabled (for LaTeX mode)
+      // Log entities if Math OCR was enabled (for LaTeX mode) - for debugging
       if (document.entities && documentType === 'latex') {
-        console.log(`Found ${document.entities.length} entities in full document processing`);
-        for (const entity of document.entities) {
-          if (entity.type === 'math_formula' || entity.type_ === 'math_formula') {
-            const latexFormula = entity.mentionText || entity.mention_text;
-            if (latexFormula && totalText.includes(latexFormula)) {
-              // Replace formula text with proper LaTeX math notation
-              totalText = totalText.replace(
-                new RegExp(escapeRegExp(latexFormula), 'g'), 
-                `$$${latexFormula}$$`
-              );
-            }
-          }
-        }
+        console.log(`[LaTeX Mode] Found ${document.entities.length} entities in full document processing`);
+        // Just log but don't modify the output - keep it pure from Google
+        document.entities.forEach((entity, index) => {
+          console.log(`Entity ${index}: type=${entity.type || entity.type_}, text=${entity.mentionText || entity.mention_text}`);
+        });
       }
     }
     
@@ -588,21 +580,13 @@ async function processDocumentIndividually(fileBuffer, processorName, client, do
       totalConfidence += confidence;
     }
     
-    // Process math formulas from entities if Math OCR was enabled (for LaTeX mode)
+    // Log entities if Math OCR was enabled (for LaTeX mode) - for debugging
     if (document.entities && documentType === 'latex') {
-      console.log(`Found ${document.entities.length} entities`);
-      for (const entity of document.entities) {
-        if (entity.type === 'math_formula' || entity.type_ === 'math_formula') {
-          const latexFormula = entity.mentionText || entity.mention_text;
-          if (latexFormula && combinedText.includes(latexFormula)) {
-            // Replace formula text with proper LaTeX math notation
-            combinedText = combinedText.replace(
-              new RegExp(escapeRegExp(latexFormula), 'g'), 
-              `$$${latexFormula}$$`
-            );
-          }
-        }
-      }
+      console.log(`[LaTeX Mode] Found ${document.entities.length} entities in document`);
+      // Just log but don't modify the output - keep it pure from Google
+      document.entities.forEach((entity, index) => {
+        console.log(`Entity ${index}: type=${entity.type || entity.type_}, text=${entity.mentionText || entity.mention_text}`);
+      });
     }
     
     const actualProcessedCount = pageEnd - pageStart;
