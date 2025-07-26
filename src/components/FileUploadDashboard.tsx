@@ -716,7 +716,7 @@ This is the second paragraph with more content.`;
           </div>
 
           {/* Middle Panel - Document Preview */}
-          <div className="xl:col-span-3 bg-white p-4 border-r border-gray-200 flex flex-col h-full overflow-hidden">
+          <div className="xl:col-span-3 bg-white p-4 border-r border-gray-200 flex flex-col h-full">
             {/* Show text results if processing is complete and preview is toggled */}
             {processingResult && showTextPreview ? (
               <div className="h-full flex flex-col">
@@ -778,7 +778,7 @@ This is the second paragraph with more content.`;
                 </div>
               </div>
             ) : (
-              <div className="h-full flex flex-col overflow-hidden">
+              <div className="h-full flex flex-col">
                 <div className="flex items-center justify-between mb-2 px-2 flex-shrink-0">
                   <div>
                     <h3 className="text-sm font-semibold text-gray-900">
@@ -793,7 +793,7 @@ This is the second paragraph with more content.`;
                 </div>
                 
                 {/* Vertical Scrolling Preview Images */}
-                <div className="flex-1 overflow-y-auto min-h-0 border border-gray-200 rounded-lg bg-gray-50">
+                <div className="flex-1 overflow-y-auto border border-gray-200 rounded-lg bg-gray-50" style="min-height: 0;">
                   <div className="flex flex-col gap-2 p-2">
                     {previewPages.map((page, index) => {
                       if (page === -1) {
