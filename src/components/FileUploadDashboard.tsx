@@ -392,14 +392,14 @@ This is the second paragraph with more content.`;
       </div>
 
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-        <div className="grid grid-cols-1 xl:grid-cols-5 min-h-[500px]">
+        <div className="grid grid-cols-1 xl:grid-cols-12 min-h-[500px]">
           
           {/* Left Panel - Upload & Controls */}
-          <div className="xl:col-span-2 p-6 bg-gradient-to-br from-gray-50 to-gray-100 border-r border-gray-200 space-y-4">
+          <div className="xl:col-span-3 p-4 bg-gradient-to-br from-gray-50 to-gray-100 border-r border-gray-200 space-y-3">
             {/* Upload Zone */}
             <div
               className={`
-                relative border-2 border-dashed rounded-xl p-6 text-center transition-all duration-200 shadow-sm
+                relative border-2 border-dashed rounded-lg p-4 text-center transition-all duration-200 shadow-sm
                 ${selectedFile ? 'border-green-400 bg-green-50/50' : 
                   dragActive ? 'border-blue-500 bg-blue-50' : 
                   'border-gray-300 hover:border-blue-400 bg-white'}
@@ -421,29 +421,29 @@ This is the second paragraph with more content.`;
               />
               
               {selectedFile ? (
-                <div className="space-y-3">
-                  <FileText className="h-12 w-12 text-green-600 mx-auto" />
+                <div className="space-y-2">
+                  <FileText className="h-10 w-10 text-green-600 mx-auto" />
                   <div>
-                    <p className="font-medium text-gray-900 truncate">{selectedFile.name}</p>
-                    <p className="text-sm text-gray-500">{formatFileSize(selectedFile.size)}</p>
+                    <p className="text-sm font-medium text-gray-900 truncate">{selectedFile.name}</p>
+                    <p className="text-xs text-gray-500">{formatFileSize(selectedFile.size)}</p>
                   </div>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       reset();
                     }}
-                    className="text-sm text-red-600 hover:text-red-700"
+                    className="text-xs text-red-600 hover:text-red-700"
                   >
-                    Remove file
+                    Remove
                   </button>
                 </div>
               ) : (
                 <>
-                  <Upload className={`h-12 w-12 mx-auto mb-3 ${dragActive ? 'text-blue-600' : 'text-gray-400'}`} />
-                  <p className="text-base font-medium text-gray-900">
-                    {dragActive ? 'Drop your PDF here' : 'Drag & drop your PDF here'}
+                  <Upload className={`h-10 w-10 mx-auto mb-2 ${dragActive ? 'text-blue-600' : 'text-gray-400'}`} />
+                  <p className="text-sm font-medium text-gray-900">
+                    {dragActive ? 'Drop PDF' : 'Drop PDF here'}
                   </p>
-                  <p className="text-sm text-gray-500 mt-1">or click to browse • Max {maxFileSize}MB</p>
+                  <p className="text-xs text-gray-500">or click • Max {maxFileSize}MB</p>
                 </>
               )}
               
@@ -464,39 +464,39 @@ This is the second paragraph with more content.`;
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     onClick={() => setSelectedDocumentType('standard')}
-                    className={`p-3 rounded-xl border-2 transition-all transform hover:scale-105 ${
+                    className={`p-2 rounded-lg border-2 transition-all ${
                       selectedDocumentType === 'standard' 
                         ? 'border-blue-500 bg-blue-50 shadow-md' 
                         : 'border-gray-200 hover:border-gray-300 bg-white'
                     }`}
                   >
-                    <FileText className={`h-5 w-5 mx-auto mb-1 ${
+                    <FileText className={`h-4 w-4 mx-auto mb-1 ${
                       selectedDocumentType === 'standard' ? 'text-blue-600' : 'text-gray-600'
                     }`} />
                     <span className="text-xs font-medium">Text</span>
                   </button>
                   <button
                     onClick={() => setSelectedDocumentType('latex')}
-                    className={`p-3 rounded-xl border-2 transition-all transform hover:scale-105 ${
+                    className={`p-2 rounded-lg border-2 transition-all ${
                       selectedDocumentType === 'latex' 
                         ? 'border-purple-500 bg-purple-50 shadow-md' 
                         : 'border-gray-200 hover:border-gray-300 bg-white'
                     }`}
                   >
-                    <Sparkles className={`h-5 w-5 mx-auto mb-1 ${
+                    <Sparkles className={`h-4 w-4 mx-auto mb-1 ${
                       selectedDocumentType === 'latex' ? 'text-purple-600' : 'text-gray-600'
                     }`} />
                     <span className="text-xs font-medium">Math</span>
                   </button>
                   <button
                     onClick={() => setSelectedDocumentType('forms')}
-                    className={`p-3 rounded-xl border-2 transition-all transform hover:scale-105 ${
+                    className={`p-2 rounded-lg border-2 transition-all ${
                       selectedDocumentType === 'forms' 
                         ? 'border-green-500 bg-green-50 shadow-md' 
                         : 'border-gray-200 hover:border-gray-300 bg-white'
                     }`}
                   >
-                    <FileSearch className={`h-5 w-5 mx-auto mb-1 ${
+                    <FileSearch className={`h-4 w-4 mx-auto mb-1 ${
                       selectedDocumentType === 'forms' ? 'text-green-600' : 'text-gray-600'
                     }`} />
                     <span className="text-xs font-medium">Forms</span>
@@ -512,13 +512,13 @@ This is the second paragraph with more content.`;
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => setSelectedOutputFormat('txt')}
-                    className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center ${
+                    className={`p-2 rounded border transition-all flex flex-col items-center ${
                       selectedOutputFormat === 'txt' 
                         ? 'border-blue-500 bg-blue-50' 
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <AlignLeft className={`h-5 w-5 mb-1 ${
+                    <AlignLeft className={`h-4 w-4 mb-1 ${
                       selectedOutputFormat === 'txt' ? 'text-blue-600' : 'text-gray-600'
                     }`} />
                     <span className="text-xs font-medium">Plain Text</span>
@@ -526,13 +526,13 @@ This is the second paragraph with more content.`;
                   
                   <button
                     onClick={() => setSelectedOutputFormat('markdown')}
-                    className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center ${
+                    className={`p-2 rounded border transition-all flex flex-col items-center ${
                       selectedOutputFormat === 'markdown' 
                         ? 'border-purple-500 bg-purple-50' 
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <FileCode className={`h-5 w-5 mb-1 ${
+                    <FileCode className={`h-4 w-4 mb-1 ${
                       selectedOutputFormat === 'markdown' ? 'text-purple-600' : 'text-gray-600'
                     }`} />
                     <span className="text-xs font-medium">Markdown</span>
@@ -540,13 +540,13 @@ This is the second paragraph with more content.`;
                   
                   <button
                     onClick={() => setSelectedOutputFormat('json')}
-                    className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center ${
+                    className={`p-2 rounded border transition-all flex flex-col items-center ${
                       selectedOutputFormat === 'json' 
                         ? 'border-orange-500 bg-orange-50' 
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <FileJson className={`h-5 w-5 mb-1 ${
+                    <FileJson className={`h-4 w-4 mb-1 ${
                       selectedOutputFormat === 'json' ? 'text-orange-600' : 'text-gray-600'
                     }`} />
                     <span className="text-xs font-medium">JSON</span>
@@ -554,13 +554,13 @@ This is the second paragraph with more content.`;
                   
                   <button
                     onClick={() => setSelectedOutputFormat('csv')}
-                    className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center ${
+                    className={`p-2 rounded border transition-all flex flex-col items-center ${
                       selectedOutputFormat === 'csv' 
                         ? 'border-green-500 bg-green-50' 
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <FileSpreadsheet className={`h-5 w-5 mb-1 ${
+                    <FileSpreadsheet className={`h-4 w-4 mb-1 ${
                       selectedOutputFormat === 'csv' ? 'text-green-600' : 'text-gray-600'
                     }`} />
                     <span className="text-xs font-medium">CSV</span>
@@ -617,25 +617,25 @@ This is the second paragraph with more content.`;
 
             {/* Cost Preview */}
             {selectedFile && (
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 border border-blue-100">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700 flex items-center">
                     <DollarSign className="h-4 w-4 mr-1" />
                     Processing Cost
                   </span>
-                  <span className="text-2xl font-bold text-gray-900">
+                  <span className="text-xl font-bold text-gray-900">
                     {cost.totalCostCents === 0 ? 'FREE' : `$${(cost.totalCostCents / 100).toFixed(2)}`}
                   </span>
                 </div>
                 
                 <div className="space-y-2">
-                  <div className="flex justify-between text-sm text-gray-600">
+                  <div className="flex justify-between text-xs text-gray-600">
                     <span>{cost.totalPages} pages × $0.012</span>
                     <span className="font-medium">${(cost.totalPages * 0.012).toFixed(2)}</span>
                   </div>
                   {cost.freePages > 0 && (
-                    <div className="flex justify-between text-sm text-green-600">
-                      <span>✨ Free pages discount</span>
+                    <div className="flex justify-between text-xs text-green-600">
+                      <span>✨ Free pages</span>
                       <span className="font-medium">-${(cost.freePages * 0.012).toFixed(2)}</span>
                     </div>
                   )}
@@ -715,8 +715,8 @@ This is the second paragraph with more content.`;
             )}
           </div>
 
-          {/* Right Panel - Preview or Text Results */}
-          <div className="xl:col-span-3 bg-white p-6">
+          {/* Middle Panel - Document Preview */}
+          <div className="xl:col-span-3 bg-white p-4 border-r border-gray-200">
             {/* Show text results if processing is complete and preview is toggled */}
             {processingResult && showTextPreview ? (
               <div className="h-full flex flex-col">
@@ -778,99 +778,134 @@ This is the second paragraph with more content.`;
                 </div>
               </div>
             ) : (
-              <div className="h-full grid grid-rows-2 gap-4">
-                {/* Top Half - Document Preview */}
-                <div className="flex flex-col border-b border-gray-200 pb-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {processingResult ? 'Document Processed' : 'Document Preview'}
-                      </h3>
-                      <p className="text-sm text-gray-500">
-                        {processingResult 
-                          ? `✅ ${processingResult.pages} pages successfully extracted`
-                          : `${cloudinaryUpload.pages} pages total`}
-                      </p>
-                    </div>
-                  </div>
-                
-                  {/* Vertical Scrolling Preview Images */}
-                  <div className="flex-1 overflow-y-auto">
-                    <div className="flex flex-col gap-3 p-2">
-                      {previewPages.map((page, index) => {
-                        if (page === -1) {
-                          return (
-                            <div key={`ellipsis-${index}`} className="text-center py-2">
-                              <span className="text-gray-400 text-2xl">...</span>
-                            </div>
-                          );
-                        }
-                        
-                        const cloudinary = new CloudinaryService();
-                        const imageUrl = cloudinary.getPreviewUrl(cloudinaryUpload.publicId, page, 300);
-                        
-                        return (
-                          <div 
-                            key={page} 
-                            className="cursor-pointer hover:scale-105 transition-transform"
-                            onClick={() => setEnlargedImage(page)}
-                          >
-                            <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow relative">
-                              {processingResult && (
-                                <div className="absolute inset-0 bg-green-500 bg-opacity-10 z-10 flex items-center justify-center">
-                                  <div className="bg-green-100 rounded-full p-2">
-                                    <FileText className="h-6 w-6 text-green-600" />
-                                  </div>
-                                </div>
-                              )}
-                              <img 
-                                src={imageUrl}
-                                alt={`Page ${page}`}
-                                className="w-full h-32 object-contain bg-gray-50"
-                                loading="lazy"
-                              />
-                              <div className={`px-2 py-1 text-white text-center text-sm ${
-                                processingResult 
-                                  ? 'bg-green-600' 
-                                  : 'bg-gray-700'
-                              }`}>
-                                Page {page} {processingResult && '✓'}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+              <div className="h-full flex flex-col">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 className="text-base font-semibold text-gray-900">
+                      {processingResult ? 'Document Processed' : 'Document Preview'}
+                    </h3>
+                    <p className="text-xs text-gray-500">
+                      {processingResult 
+                        ? `✅ ${processingResult.pages} pages extracted`
+                        : `${cloudinaryUpload.pages} pages total`}
+                    </p>
                   </div>
                 </div>
                 
-                {/* Bottom Half - Format Example */}
-                <div className="flex flex-col">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        Output Format Preview
-                      </h3>
-                      <p className="text-sm text-gray-500">
-                        {selectedOutputFormat.toUpperCase()} format example
-                      </p>
-                    </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      selectedOutputFormat === 'txt' ? 'bg-blue-100 text-blue-700' :
-                      selectedOutputFormat === 'markdown' ? 'bg-purple-100 text-purple-700' :
-                      selectedOutputFormat === 'json' ? 'bg-orange-100 text-orange-700' :
-                      'bg-green-100 text-green-700'
-                    }`}>
-                      {selectedOutputFormat.toUpperCase()}
-                    </span>
+                {/* Vertical Scrolling Preview Images */}
+                <div className="flex-1 overflow-y-auto">
+                  <div className="flex flex-col gap-2 px-2">
+                    {previewPages.map((page, index) => {
+                      if (page === -1) {
+                        return (
+                          <div key={`ellipsis-${index}`} className="text-center py-1">
+                            <span className="text-gray-400 text-lg">...</span>
+                          </div>
+                        );
+                      }
+                      
+                      const cloudinary = new CloudinaryService();
+                      const imageUrl = cloudinary.getPreviewUrl(cloudinaryUpload.publicId, page, 200);
+                      
+                      return (
+                        <div 
+                          key={page} 
+                          className="cursor-pointer hover:scale-105 transition-transform"
+                          onClick={() => setEnlargedImage(page)}
+                        >
+                          <div className="bg-white rounded shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow relative">
+                            {processingResult && (
+                              <div className="absolute inset-0 bg-green-500 bg-opacity-10 z-10 flex items-center justify-center">
+                                <div className="bg-green-100 rounded-full p-1">
+                                  <FileText className="h-4 w-4 text-green-600" />
+                                </div>
+                              </div>
+                            )}
+                            <img 
+                              src={imageUrl}
+                              alt={`Page ${page}`}
+                              className="w-full h-auto object-contain bg-gray-50"
+                              loading="lazy"
+                            />
+                            <div className={`px-2 py-1 text-white text-center text-xs ${
+                              processingResult 
+                                ? 'bg-green-600' 
+                                : 'bg-gray-700'
+                            }`}>
+                              Page {page} {processingResult && '✓'}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                  
-                  {/* Format Example Preview */}
-                  <div className="flex-1 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
-                    <pre className="h-full overflow-auto p-4 text-xs text-gray-700 font-mono whitespace-pre-wrap">
-                      {getFormatExample()}
-                    </pre>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Right Panel - Output Format Preview */}
+          <div className="xl:col-span-6 bg-white p-6">
+            {!selectedFile ? (
+              <div className="h-full flex items-center justify-center text-center bg-gray-50 rounded-xl">
+                <div>
+                  <FileText className="h-16 w-16 text-gray-300 mx-auto mb-3" />
+                  <h3 className="text-base font-medium text-gray-700 mb-1">No output preview</h3>
+                  <p className="text-sm text-gray-500">Upload a PDF to see format preview</p>
+                </div>
+              </div>
+            ) : processingResult && showTextPreview ? (
+              <div className="h-full flex flex-col">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Extracted Text
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {selectedOutputFormat.toUpperCase()} • {processingResult.pages} pages
+                    </p>
                   </div>
+                  <button
+                    onClick={() => setShowTextPreview(false)}
+                    className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-lg hover:bg-gray-200"
+                  >
+                    <X className="h-3 w-3 inline mr-1" />
+                    Close
+                  </button>
+                </div>
+                
+                <div className="flex-1 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                  <pre className="h-full overflow-auto p-6 text-sm text-gray-800 font-mono whitespace-pre-wrap">
+                    {formatTextForOutput(processingResult.text)}
+                  </pre>
+                </div>
+              </div>
+            ) : (
+              <div className="h-full flex flex-col">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Output Format Preview
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {selectedOutputFormat.toUpperCase()} format example
+                    </p>
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    selectedOutputFormat === 'txt' ? 'bg-blue-100 text-blue-700' :
+                    selectedOutputFormat === 'markdown' ? 'bg-purple-100 text-purple-700' :
+                    selectedOutputFormat === 'json' ? 'bg-orange-100 text-orange-700' :
+                    'bg-green-100 text-green-700'
+                  }`}>
+                    {selectedOutputFormat.toUpperCase()}
+                  </span>
+                </div>
+                
+                {/* Format Example Preview */}
+                <div className="flex-1 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                  <pre className="h-full overflow-auto p-6 text-sm text-gray-700 font-mono whitespace-pre-wrap">
+                    {getFormatExample()}
+                  </pre>
                 </div>
               </div>
             )}
