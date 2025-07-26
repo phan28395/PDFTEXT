@@ -51,7 +51,6 @@ export default function Dashboard() {
           icon: Sparkles,
           title: 'Extract Text with LaTeX Formula Preservation',
           description: 'For any document containing mathematical symbols or equations - preserves formulas in LaTeX format',
-          features: ['LaTeX formula preservation', 'Mixed text & math extraction', 'Equation syntax retention'],
           color: 'purple'
         };
       case 'forms':
@@ -59,7 +58,6 @@ export default function Dashboard() {
           icon: FileSearch,
           title: 'Extract Structured Data from Forms',
           description: 'Optimized for forms, tables, invoices, and structured documents',
-          features: ['Table structure detection', 'Form field extraction', 'Data organization'],
           color: 'green'
         };
       default: // 'standard'
@@ -67,7 +65,6 @@ export default function Dashboard() {
           icon: FileText,
           title: 'Convert PDF to Text with AI',
           description: 'Extract text from books, articles, reports, and general documents',
-          features: ['Paragraph preservation', 'Clean text extraction', 'Multi-format export'],
           color: 'blue'
         };
     }
@@ -97,22 +94,6 @@ export default function Dashboard() {
                 <p className="text-gray-600 mb-3 max-w-2xl mx-auto">
                   {modeContent.description}
                 </p>
-                <div className="flex items-center justify-center gap-4 text-sm mb-3">
-                  {modeContent.features.map((feature, index) => (
-                    <span key={index} className={`inline-flex items-center ${
-                      modeContent.color === 'purple' ? 'text-purple-700' :
-                      modeContent.color === 'green' ? 'text-green-700' :
-                      'text-blue-700'
-                    }`}>
-                      <span className={`w-1.5 h-1.5 rounded-full mr-2 ${
-                        modeContent.color === 'purple' ? 'bg-purple-400' :
-                        modeContent.color === 'green' ? 'bg-green-400' :
-                        'bg-blue-400'
-                      }`} />
-                      {feature}
-                    </span>
-                  ))}
-                </div>
                 {!userLoading && isTrialUser && (
                   <p className="text-sm mt-2">
                     <span className="inline-flex items-center gap-2">
