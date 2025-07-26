@@ -49,9 +49,9 @@ export default function Dashboard() {
       case 'latex':
         return {
           icon: Sparkles,
-          title: 'Extract Mathematical Content with AI',
-          description: 'Perfect for academic papers, research documents, and mathematical formulas',
-          features: ['LaTeX syntax preservation', 'Mathematical equation extraction', 'Academic formatting'],
+          title: 'Extract Text with LaTeX Formula Preservation',
+          description: 'For any document containing mathematical symbols or equations - preserves formulas in LaTeX format',
+          features: ['LaTeX formula preservation', 'Mixed text & math extraction', 'Equation syntax retention'],
           color: 'purple'
         };
       case 'forms':

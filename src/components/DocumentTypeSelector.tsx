@@ -24,10 +24,10 @@ const DOCUMENT_TYPES: DocumentTypeOption[] = [
   {
     id: 'latex',
     name: 'LaTeX Document', 
-    description: 'Academic papers with mathematical formulas',
+    description: 'Documents with mathematical formulas to preserve',
     icon: Calculator,
-    examples: ['Research papers', 'Equations', 'Scientific texts', 'Thesis'],
-    features: ['Math formulas', 'LaTeX syntax', 'Academic structure']
+    examples: ['Research papers', 'Technical docs', 'Scientific texts', 'Any doc with equations'],
+    features: ['LaTeX formula preservation', 'Mixed content support', 'Equation syntax retention']
   },
   {
     id: 'forms',

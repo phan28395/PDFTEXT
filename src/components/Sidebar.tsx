@@ -125,7 +125,7 @@ export default function Sidebar({ className = '', isOpen = true, onClose }: Side
             <div className="mt-4 p-3 bg-gray-50 rounded-lg">
               <p className="text-xs text-gray-600">
                 {documentMode === 'standard' && 'Optimized for regular text documents, articles, and books.'}
-                {documentMode === 'latex' && 'Enhanced processing for mathematical formulas and academic papers.'}
+                {documentMode === 'latex' && 'Preserves mathematical formulas in LaTeX format within any document.'}
                 {documentMode === 'forms' && 'Specialized extraction for forms, tables, and structured data.'}
               </p>
             </div>
