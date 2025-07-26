@@ -41,6 +41,9 @@ export default function Dashboard() {
 
   // Helper function for credit balance styling
   const getCreditColor = () => {
+    // Don't show warning colors during loading
+    if (userLoading) return 'bg-gray-50 border-gray-200 text-gray-600';
+    
     if (creditBalance < 100) return 'bg-red-50 border-red-200 text-red-600';
     if (creditBalance < 500) return 'bg-yellow-50 border-yellow-200 text-yellow-600';
     return 'bg-green-50 border-green-200 text-green-600';
@@ -81,7 +84,7 @@ export default function Dashboard() {
         
 
         {/* Free Trial or Credit Balance Alert */}
-        {isTrialUser && freePages <= 2 && (
+        {!userLoading && isTrialUser && freePages <= 2 && (
           <div className="border rounded-lg p-4 bg-blue-50 border-blue-200 text-blue-600">
             <div className="flex items-center">
               <AlertCircle className="h-5 w-5 mr-3" />
@@ -105,7 +108,7 @@ export default function Dashboard() {
             </div>
           </div>
         )}
-        {!isTrialUser && creditBalance < 500 && (
+        {!userLoading && !isTrialUser && creditBalance < 500 && (
           <div className={`border rounded-lg p-4 ${getCreditColor()}`}>
             <div className="flex items-center">
               <AlertCircle className="h-5 w-5 mr-3" />
