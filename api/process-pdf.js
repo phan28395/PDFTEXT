@@ -39,12 +39,18 @@ let initError = null;
 try {
   if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
     const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
+    // Use EU endpoint for better Math OCR support (as per working script)
+    const location = process.env.GOOGLE_DOCUMENT_AI_LOCATION || 'eu';
+    const apiEndpoint = `${location}-documentai.googleapis.com`;
+    
     client = new DocumentProcessorServiceClient({
       credentials: credentials,
       projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
-      apiEndpoint: 'us-documentai.googleapis.com',
+      clientOptions: {
+        apiEndpoint: apiEndpoint
+      }
     });
-    console.log('Google Document AI client initialized successfully');
+    console.log(`Google Document AI client initialized successfully with endpoint: ${apiEndpoint}`);
   } else {
     initError = 'Google credentials environment variable not found';
     throw new Error(initError);
@@ -173,7 +179,8 @@ Page 2 content would appear here...
     const fileBuffer = fs.readFileSync(file.filepath);
     
     // Prepare the document for Google Document AI
-    const processorName = `projects/${process.env.GOOGLE_CLOUD_PROJECT_ID}/locations/us/processors/${process.env.GOOGLE_DOCUMENT_AI_PROCESSOR_ID}`;
+    const location = process.env.GOOGLE_DOCUMENT_AI_LOCATION || 'eu';
+    const processorName = `projects/${process.env.GOOGLE_CLOUD_PROJECT_ID}/locations/${location}/processors/${process.env.GOOGLE_DOCUMENT_AI_PROCESSOR_ID}`;
     
     // Extract form fields for new parameters
     const documentType = fields.documentType?.[0] || 'standard';
@@ -302,6 +309,8 @@ Page 2 content would appear here...
           content: fileBuffer.toString('base64'),
           mimeType: 'application/pdf',
         },
+        // Add document type specific hints
+        processOptions: getProcessingOptionsForType(documentType)
       };
       
       const [result] = await client.processDocument(request);
@@ -323,6 +332,23 @@ Page 2 content would appear here...
         totalPages = pagesToProcess;
         totalConfidence = document.pages?.[0]?.detectedLanguages?.[0]?.confidence || 0.95;
         processedPages = [{ pageNumber: 1, text: totalText, confidence: totalConfidence }];
+      }
+      
+      // Process math formulas from entities if Math OCR was enabled (for LaTeX mode)
+      if (document.entities && documentType === 'latex') {
+        console.log(`Found ${document.entities.length} entities in full document processing`);
+        for (const entity of document.entities) {
+          if (entity.type === 'math_formula' || entity.type_ === 'math_formula') {
+            const latexFormula = entity.mentionText || entity.mention_text;
+            if (latexFormula && totalText.includes(latexFormula)) {
+              // Replace formula text with proper LaTeX math notation
+              totalText = totalText.replace(
+                new RegExp(escapeRegExp(latexFormula), 'g'), 
+                `$$${latexFormula}$$`
+              );
+            }
+          }
+        }
       }
     }
     
@@ -502,29 +528,12 @@ async function processDocumentIndividually(fileBuffer, processorName, client, do
       
       // Extract text for this page
       let pageText = '';
-      let mathFormulas = [];
       
       // Extract paragraphs
       if (page.paragraphs) {
         for (const paragraph of page.paragraphs) {
           const paragraphText = extractTextFromLayout(paragraph.layout, document.text);
           pageText += paragraphText + '\n';
-        }
-      }
-      
-      // Extract math formulas if Math OCR was enabled (for LaTeX mode)
-      if (page.visualElements) {
-        for (const element of page.visualElements) {
-          if (element.type === 'math_formula' && element.detectedLanguages?.[0]?.languageCode) {
-            // The language code contains the LaTeX formula
-            const latexFormula = element.detectedLanguages[0].languageCode;
-            mathFormulas.push({
-              formula: latexFormula,
-              confidence: element.detectedLanguages[0].confidence || 0.95
-            });
-            // Insert LaTeX formula inline where it appears in the text
-            pageText += `$${latexFormula}$ `;
-          }
         }
       }
       
@@ -579,6 +588,23 @@ async function processDocumentIndividually(fileBuffer, processorName, client, do
       totalConfidence += confidence;
     }
     
+    // Process math formulas from entities if Math OCR was enabled (for LaTeX mode)
+    if (document.entities && documentType === 'latex') {
+      console.log(`Found ${document.entities.length} entities`);
+      for (const entity of document.entities) {
+        if (entity.type === 'math_formula' || entity.type_ === 'math_formula') {
+          const latexFormula = entity.mentionText || entity.mention_text;
+          if (latexFormula && combinedText.includes(latexFormula)) {
+            // Replace formula text with proper LaTeX math notation
+            combinedText = combinedText.replace(
+              new RegExp(escapeRegExp(latexFormula), 'g'), 
+              `$$${latexFormula}$$`
+            );
+          }
+        }
+      }
+    }
+    
     const actualProcessedCount = pageEnd - pageStart;
     return {
       pages: processedPages,
@@ -612,6 +638,13 @@ function extractTextFromLayout(layout, fullText) {
 }
 
 /**
+ * Escape special regex characters
+ */
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
  * Get processing options based on document type
  * Different modes have different costs:
  * - Standard: Basic OCR (lowest cost)
@@ -621,16 +654,11 @@ function extractTextFromLayout(layout, fullText) {
 function getProcessingOptionsForType(documentType) {
   switch (documentType) {
     case 'latex':
-      // Enable Math OCR for LaTeX formula extraction
+      // Enable Math OCR for LaTeX formula extraction (matching working script)
       return {
         ocrConfig: {
-          enableNativePdfParsing: true,
-          enableImageQualityScores: true,
-          enableSymbol: true,
           premiumFeatures: {
-            computeStyleInfo: true,
-            enableMathOcr: true,  // Extract math formulas in LaTeX format
-            enableSelectionMarkDetection: false
+            enableMathOcr: true  // Extract math formulas in LaTeX format
           }
         }
       };
