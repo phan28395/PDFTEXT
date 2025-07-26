@@ -56,7 +56,6 @@ export default function FileUploadDashboard({
   // Output format selection
   type OutputFormat = 'txt' | 'markdown' | 'docx' | 'csv' | 'json';
   const [selectedOutputFormat, setSelectedOutputFormat] = useState<OutputFormat>('txt');
-  const [showTextPreview, setShowTextPreview] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -329,7 +328,13 @@ This is the second paragraph with more content.`;
   };
 
   // Format text based on selected output format
+  // TEMPORARILY: Always return pure text from Google API
   const formatTextForOutput = (text: string): string => {
+    // For now, always return pure text as requested
+    return text;
+    
+    // Original formatting code commented out for future use
+    /*
     const pages = text.split('\n\n---\n\n'); // Assuming pages are separated by this delimiter
     
     switch (selectedOutputFormat) {
@@ -360,23 +365,18 @@ This is the second paragraph with more content.`;
       default: // 'txt'
         return text;
     }
+    */
   };
 
   // Download result
   const handleDownload = () => {
     if (processingResult && selectedFile) {
       const formattedText = formatTextForOutput(processingResult.text);
-      const extension = selectedOutputFormat === 'markdown' ? 'md' : selectedOutputFormat;
-      const fileName = selectedFile.name.replace('.pdf', `.${extension}`);
-      
-      // For DOCX, we'd need a library like docx.js
-      if (selectedOutputFormat === 'docx') {
-        toast.error('DOCX export coming soon!');
-        return;
-      }
+      // Always use .txt extension for now as requested
+      const fileName = selectedFile.name.replace('.pdf', '.txt');
       
       downloadTextFile(formattedText, fileName);
-      toast.success(`Downloaded as ${extension.toUpperCase()}!`);
+      toast.success(`Downloaded as TXT (pure text from Google API)`);
     }
   };
 
@@ -718,8 +718,8 @@ This is the second paragraph with more content.`;
 
           {/* Middle Panel - Document Preview */}
           <div className="xl:col-span-2 bg-white p-2 border-r border-gray-200 h-full overflow-hidden">
-            {/* Show text results if processing is complete and preview is toggled */}
-            {processingResult && showTextPreview ? (
+            {/* Show PDF page previews only */}
+            {false ? (
               <div className="h-full flex flex-col">
                 <div className="flex items-center justify-between mb-6">
                   <div>
@@ -850,32 +850,6 @@ This is the second paragraph with more content.`;
                   <p className="text-sm text-gray-500">Upload a PDF to see format preview</p>
                 </div>
               </div>
-            ) : processingResult && showTextPreview ? (
-              <div className="h-full flex flex-col">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      Extracted Text
-                    </h3>
-                    <p className="text-sm text-gray-500">
-                      {selectedOutputFormat.toUpperCase()} • {processingResult.pages} pages
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setShowTextPreview(false)}
-                    className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-lg hover:bg-gray-200"
-                  >
-                    <X className="h-3 w-3 inline mr-1" />
-                    Close
-                  </button>
-                </div>
-                
-                <div className="flex-1 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
-                  <pre className="h-full overflow-auto p-6 text-sm text-gray-800 font-mono whitespace-pre-wrap">
-                    {formatTextForOutput(processingResult.text)}
-                  </pre>
-                </div>
-              </div>
             ) : (
               <div className="h-full flex flex-col">
                 <div className="flex items-center justify-between mb-4">
@@ -884,7 +858,7 @@ This is the second paragraph with more content.`;
                       Output Format Preview
                     </h3>
                     <p className="text-sm text-gray-500">
-                      {selectedOutputFormat.toUpperCase()} format example
+                      {processingResult ? 'Actual extracted text' : `${selectedOutputFormat.toUpperCase()} format example`}
                     </p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -893,14 +867,14 @@ This is the second paragraph with more content.`;
                     selectedOutputFormat === 'json' ? 'bg-orange-100 text-orange-700' :
                     'bg-green-100 text-green-700'
                   }`}>
-                    {selectedOutputFormat.toUpperCase()}
+                    {processingResult ? 'TXT' : selectedOutputFormat.toUpperCase()}
                   </span>
                 </div>
                 
-                {/* Format Example Preview */}
+                {/* Show actual results or format example */}
                 <div className="flex-1 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
                   <pre className="h-full overflow-auto p-6 text-sm text-gray-700 font-mono whitespace-pre-wrap">
-                    {getFormatExample()}
+                    {processingResult ? processingResult.text : getFormatExample()}
                   </pre>
                 </div>
               </div>

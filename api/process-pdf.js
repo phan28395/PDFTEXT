@@ -698,6 +698,17 @@ async function generateMultipleDownloads(processedPages, downloadFormat, recordI
  */
 async function convertTextToFormat(text, outputFormat, processedPages) {
   try {
+    // For now, return pure text for ALL formats as requested
+    console.log(`[Output Format] Requested: ${outputFormat}, but returning pure text as requested`);
+    
+    return {
+      content: text,  // Always return pure text from Google API
+      mimeType: 'text/plain',
+      extension: 'txt'  // Always use .txt extension for now
+    };
+    
+    // Original format conversion code commented out for future use
+    /*
     switch (outputFormat) {
       case 'text':
         return {
@@ -763,6 +774,7 @@ async function convertTextToFormat(text, outputFormat, processedPages) {
           extension: 'txt'
         };
     }
+    */
   } catch (error) {
     console.error('Error converting text format:', error);
     return {
