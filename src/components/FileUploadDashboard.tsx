@@ -793,7 +793,7 @@ This is the second paragraph with more content.`;
                 </div>
                 
                 {/* Vertical Scrolling Preview Images */}
-                <div className="flex-1 overflow-y-auto border border-gray-200 rounded-lg bg-gray-50" style="min-height: 0;">
+                <div className="flex-1 overflow-y-auto border border-gray-200 rounded-lg bg-gray-50" style={{ minHeight: 0 }}>
                   <div className="flex flex-col gap-2 p-2">
                     {previewPages.map((page, index) => {
                       if (page === -1) {
