@@ -1,7 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
-import { FileText } from 'lucide-react';
+import { FileText, Sparkles, FileSearch } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUser } from '@/hooks/useDatabase';
+import { useDocumentMode } from '@/contexts/DocumentModeContext';
+import { DocumentType } from '@/components/DocumentTypeSelector';
 
 interface SidebarProps {
   className?: string;
@@ -13,6 +15,7 @@ export default function Sidebar({ className = '', isOpen = true, onClose }: Side
   const location = useLocation();
   const { user } = useAuth();
   const { user: userData } = useUser(user?.id);
+  const { documentMode, setDocumentMode } = useDocumentMode();
 
 
   return (
@@ -70,7 +73,64 @@ export default function Sidebar({ className = '', isOpen = true, onClose }: Side
             </Link>
           )}
 
-          {/* Empty space where navigation was */}
+          {/* Document Mode Tabs */}
+          <div className="p-4 space-y-2">
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+              Document Mode
+            </h3>
+            
+            <button
+              onClick={() => setDocumentMode('standard')}
+              className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all ${
+                documentMode === 'standard'
+                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <FileText className={`h-5 w-5 ${
+                documentMode === 'standard' ? 'text-blue-600' : 'text-gray-400'
+              }`} />
+              <span className="font-medium">Text Document</span>
+            </button>
+            
+            <button
+              onClick={() => setDocumentMode('latex')}
+              className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all ${
+                documentMode === 'latex'
+                  ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <Sparkles className={`h-5 w-5 ${
+                documentMode === 'latex' ? 'text-purple-600' : 'text-gray-400'
+              }`} />
+              <span className="font-medium">Math/LaTeX</span>
+            </button>
+            
+            <button
+              onClick={() => setDocumentMode('forms')}
+              className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all ${
+                documentMode === 'forms'
+                  ? 'bg-green-50 text-green-700 border border-green-200'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <FileSearch className={`h-5 w-5 ${
+                documentMode === 'forms' ? 'text-green-600' : 'text-gray-400'
+              }`} />
+              <span className="font-medium">Forms & Tables</span>
+            </button>
+            
+            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+              <p className="text-xs text-gray-600">
+                {documentMode === 'standard' && 'Optimized for regular text documents, articles, and books.'}
+                {documentMode === 'latex' && 'Enhanced processing for mathematical formulas and academic papers.'}
+                {documentMode === 'forms' && 'Specialized extraction for forms, tables, and structured data.'}
+              </p>
+            </div>
+          </div>
+          
+          {/* Spacer */}
           <div className="flex-1"></div>
 
         </div>

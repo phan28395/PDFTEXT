@@ -6,6 +6,7 @@ import { DocumentType } from './DocumentTypeSelector';
 import { useAuth } from '@/hooks/useAuth';
 import { useUser } from '@/hooks/useDatabase';
 import { CloudinaryService } from '@/services/cloudinary';
+import { useDocumentMode } from '@/contexts/DocumentModeContext';
 
 interface FileUploadProps {
   onFileSelect?: (file: File) => void;
@@ -34,7 +35,6 @@ export default function FileUploadDashboard({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [processingResult, setProcessingResult] = useState<ProcessingResult | null>(null);
   const [processingError, setProcessingError] = useState<ProcessingError | null>(null);
-  const [selectedDocumentType, setSelectedDocumentType] = useState<DocumentType>('standard');
   
   // Page selection
   const [processAllPages, setProcessAllPages] = useState(true);
@@ -64,6 +64,7 @@ export default function FileUploadDashboard({
   
   const { user, session } = useAuth();
   const { user: userData, refreshUser } = useUser(user?.id);
+  const { documentMode } = useDocumentMode();
   
   // Log session status on mount and when it changes
   useEffect(() => {
@@ -192,7 +193,7 @@ export default function FileUploadDashboard({
       
       const result = await processPDF(
         selectedFile, 
-        selectedDocumentType, 
+        documentMode, 
         'combined',
         (progress) => setUploadProgress(progress),
         pageRange,
@@ -484,53 +485,6 @@ This is the second paragraph with more content.`;
               )}
             </div>
 
-            {/* Document Type */}
-            {selectedFile && (
-              <div className="space-y-3">
-                <h3 className="text-xs font-medium text-gray-700">Document Type</h3>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    onClick={() => setSelectedDocumentType('standard')}
-                    className={`p-2 rounded-lg border-2 transition-all ${
-                      selectedDocumentType === 'standard' 
-                        ? 'border-blue-500 bg-blue-50 shadow-md' 
-                        : 'border-gray-200 hover:border-gray-300 bg-white'
-                    }`}
-                  >
-                    <FileText className={`h-4 w-4 mx-auto mb-1 ${
-                      selectedDocumentType === 'standard' ? 'text-blue-600' : 'text-gray-600'
-                    }`} />
-                    <span className="text-xs font-medium">Text</span>
-                  </button>
-                  <button
-                    onClick={() => setSelectedDocumentType('latex')}
-                    className={`p-2 rounded-lg border-2 transition-all ${
-                      selectedDocumentType === 'latex' 
-                        ? 'border-purple-500 bg-purple-50 shadow-md' 
-                        : 'border-gray-200 hover:border-gray-300 bg-white'
-                    }`}
-                  >
-                    <Sparkles className={`h-4 w-4 mx-auto mb-1 ${
-                      selectedDocumentType === 'latex' ? 'text-purple-600' : 'text-gray-600'
-                    }`} />
-                    <span className="text-xs font-medium">Math</span>
-                  </button>
-                  <button
-                    onClick={() => setSelectedDocumentType('forms')}
-                    className={`p-2 rounded-lg border-2 transition-all ${
-                      selectedDocumentType === 'forms' 
-                        ? 'border-green-500 bg-green-50 shadow-md' 
-                        : 'border-gray-200 hover:border-gray-300 bg-white'
-                    }`}
-                  >
-                    <FileSearch className={`h-4 w-4 mx-auto mb-1 ${
-                      selectedDocumentType === 'forms' ? 'text-green-600' : 'text-gray-600'
-                    }`} />
-                    <span className="text-xs font-medium">Forms</span>
-                  </button>
-                </div>
-              </div>
-            )}
 
             {/* Output Format Selection - BEFORE processing */}
             {selectedFile && !processingResult && (

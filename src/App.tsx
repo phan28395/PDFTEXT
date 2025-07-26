@@ -5,6 +5,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminProtectedRoute from './components/AdminProtectedRoute';
+import { DocumentModeProvider } from './contexts/DocumentModeContext';
 
 // Lazy load components for code splitting
 const Home = lazy(() => import('./pages/Home'));
@@ -29,9 +30,10 @@ const UserProfile = lazy(() => import('./pages/UserProfile'));
 function App() {
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gray-50">
-        <Suspense fallback={<LoadingSpinner size="lg" />}>
-          <Routes>
+      <DocumentModeProvider>
+        <div className="min-h-screen bg-gray-50">
+          <Suspense fallback={<LoadingSpinner size="lg" />}>
+            <Routes>
           {/* Public routes */}
           <Route path="/" element={<Home />} />
           <Route path="/privacy" element={<Privacy />} />
@@ -150,6 +152,7 @@ function App() {
           },
         }}
       />
+      </DocumentModeProvider>
     </ErrorBoundary>
   );
 }
