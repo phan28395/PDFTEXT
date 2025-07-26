@@ -197,7 +197,6 @@ Page 2 content would appear here...
         output_format: 'txt',
         processing_status: 'processing',
         document_type: documentType,
-        download_format: downloadFormat,
         was_paid: false, // Will update after charging
         payment_amount: 0 // Will update after charging
       });
@@ -352,8 +351,7 @@ Page 2 content would appear here...
         pages_processed: totalPages,
         output_format: outputFormat,
         processing_status: 'completed',
-        processing_time_ms: processingTime,
-        completed_at: new Date().toISOString(),
+        processing_time: processingTime,
         was_paid: chargeResult.credits_charged > 0,
         payment_amount: chargeResult.credits_charged || 0,
         text_content: totalText
