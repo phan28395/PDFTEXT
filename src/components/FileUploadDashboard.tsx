@@ -716,7 +716,7 @@ This is the second paragraph with more content.`;
           </div>
 
           {/* Middle Panel - Document Preview */}
-          <div className="xl:col-span-3 bg-white p-4 border-r border-gray-200 flex flex-col h-full">
+          <div className="xl:col-span-3 bg-white p-4 border-r border-gray-200 flex flex-col h-full overflow-hidden">
             {/* Show text results if processing is complete and preview is toggled */}
             {processingResult && showTextPreview ? (
               <div className="h-full flex flex-col">
@@ -778,10 +778,10 @@ This is the second paragraph with more content.`;
                 </div>
               </div>
             ) : (
-              <div className="h-full flex flex-col">
-                <div className="flex items-center justify-between mb-3 flex-shrink-0">
+              <div className="h-full flex flex-col overflow-hidden">
+                <div className="flex items-center justify-between mb-2 px-2 flex-shrink-0">
                   <div>
-                    <h3 className="text-base font-semibold text-gray-900">
+                    <h3 className="text-sm font-semibold text-gray-900">
                       {processingResult ? 'Document Processed' : 'Document Preview'}
                     </h3>
                     <p className="text-xs text-gray-500">
@@ -793,8 +793,8 @@ This is the second paragraph with more content.`;
                 </div>
                 
                 {/* Vertical Scrolling Preview Images */}
-                <div className="flex-1 overflow-y-auto min-h-0">
-                  <div className="flex flex-col gap-2 px-2 pb-2">
+                <div className="flex-1 overflow-y-auto min-h-0 border border-gray-200 rounded-lg bg-gray-50">
+                  <div className="flex flex-col gap-2 p-2">
                     {previewPages.map((page, index) => {
                       if (page === -1) {
                         return (
@@ -805,7 +805,7 @@ This is the second paragraph with more content.`;
                       }
                       
                       const cloudinary = new CloudinaryService();
-                      const imageUrl = cloudinary.getPreviewUrl(cloudinaryUpload.publicId, page, 200);
+                      const imageUrl = cloudinary.getPreviewUrl(cloudinaryUpload.publicId, page, 800);
                       
                       return (
                         <div 
@@ -813,7 +813,7 @@ This is the second paragraph with more content.`;
                           className="cursor-pointer hover:scale-105 transition-transform"
                           onClick={() => setEnlargedImage(page)}
                         >
-                          <div className="bg-white rounded shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow relative">
+                          <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200 hover:shadow-md transition-shadow relative">
                             {processingResult && (
                               <div className="absolute inset-0 bg-green-500 bg-opacity-10 z-10 flex items-center justify-center">
                                 <div className="bg-green-100 rounded-full p-1">
@@ -824,7 +824,7 @@ This is the second paragraph with more content.`;
                             <img 
                               src={imageUrl}
                               alt={`Page ${page}`}
-                              className="w-full h-auto object-contain bg-gray-50"
+                              className="w-full max-w-[150px] mx-auto h-auto object-contain bg-white p-1"
                             />
                             <div className={`px-2 py-1 text-white text-center text-xs ${
                               processingResult 
