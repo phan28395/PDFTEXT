@@ -33,7 +33,20 @@ export default function Dashboard() {
   // Calculate usage statistics - pay per use model with free trial
   const creditBalance = userData?.credit_balance || 0; // Credits in cents
   const freePages = userData?.free_pages_remaining ?? 0; // Use actual value, even if 0
-  const costPerPage = 1.2; // 1.2 cents per page ($0.012)
+  
+  // Different costs per page based on document mode
+  const getCostPerPage = () => {
+    switch (documentMode) {
+      case 'latex':
+        return 2.4; // 2.4 cents per page ($0.024) - Math OCR premium feature
+      case 'forms':
+        return 1.8; // 1.8 cents per page ($0.018) - Form parser features
+      default:
+        return 1.2; // 1.2 cents per page ($0.012) - Standard OCR
+    }
+  };
+  
+  const costPerPage = getCostPerPage();
   const hasCredits = creditBalance >= costPerPage || freePages > 0;
   const isTrialUser = freePages > 0;
   
@@ -51,21 +64,24 @@ export default function Dashboard() {
           icon: Sparkles,
           title: 'Extract Text with LaTeX Formula Preservation',
           description: 'For any document containing mathematical symbols or equations - preserves formulas in LaTeX format',
-          color: 'purple'
+          color: 'purple',
+          price: '$0.024/page'
         };
       case 'forms':
         return {
           icon: FileSearch,
           title: 'Extract Structured Data from Forms',
           description: 'Optimized for forms, tables, invoices, and structured documents',
-          color: 'green'
+          color: 'green',
+          price: '$0.018/page'
         };
       default: // 'standard'
         return {
           icon: FileText,
           title: 'Convert PDF to Text with AI',
           description: 'Extract text from books, articles, reports, and general documents',
-          color: 'blue'
+          color: 'blue',
+          price: '$0.012/page'
         };
     }
   };
@@ -91,16 +107,30 @@ export default function Dashboard() {
                     {modeContent.title}
                   </h1>
                 </div>
-                <p className="text-gray-600 mb-3 max-w-2xl mx-auto">
+                <p className="text-gray-600 mb-2 max-w-2xl mx-auto">
                   {modeContent.description}
                 </p>
+                <div className="flex items-center justify-center gap-3 mb-3">
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                    modeContent.color === 'purple' ? 'bg-purple-100 text-purple-700' :
+                    modeContent.color === 'green' ? 'bg-green-100 text-green-700' :
+                    'bg-blue-100 text-blue-700'
+                  }`}>
+                    {modeContent.price}
+                  </span>
+                  {documentMode !== 'standard' && (
+                    <span className="text-xs text-gray-500">
+                      (Premium features enabled)
+                    </span>
+                  )}
+                </div>
                 {!userLoading && isTrialUser && (
                   <p className="text-sm mt-2">
                     <span className="inline-flex items-center gap-2">
                       <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-medium">
                         {freePages} free pages remaining
                       </span>
-                      <span className="text-gray-600">Then just $0.012 per page</span>
+                      <span className="text-gray-600">Then ${(costPerPage / 100).toFixed(3)} per page</span>
                     </span>
                   </p>
                 )}
@@ -130,7 +160,7 @@ export default function Dashboard() {
               </h3>
               <p className="text-gray-600 mb-6">
                 {isTrialUser ? 
-                  'You\'ve used all your free pages. Add credits to continue processing PDFs at just $0.012 per page.' :
+                  `You've used all your free pages. Add credits to continue processing PDFs at just $${(costPerPage / 100).toFixed(3)} per page.` :
                   'You need credits to process PDF files. Add credits to get started.'
                 }
               </p>

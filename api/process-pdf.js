@@ -502,10 +502,53 @@ async function processDocumentIndividually(fileBuffer, processorName, client, do
       
       // Extract text for this page
       let pageText = '';
+      let mathFormulas = [];
+      
+      // Extract paragraphs
       if (page.paragraphs) {
         for (const paragraph of page.paragraphs) {
           const paragraphText = extractTextFromLayout(paragraph.layout, document.text);
           pageText += paragraphText + '\n';
+        }
+      }
+      
+      // Extract math formulas if Math OCR was enabled (for LaTeX mode)
+      if (page.visualElements) {
+        for (const element of page.visualElements) {
+          if (element.type === 'math_formula' && element.detectedLanguages?.[0]?.languageCode) {
+            // The language code contains the LaTeX formula
+            const latexFormula = element.detectedLanguages[0].languageCode;
+            mathFormulas.push({
+              formula: latexFormula,
+              confidence: element.detectedLanguages[0].confidence || 0.95
+            });
+            // Insert LaTeX formula inline where it appears in the text
+            pageText += `$${latexFormula}$ `;
+          }
+        }
+      }
+      
+      // Extract form fields and tables if Forms mode
+      if (page.formFields) {
+        pageText += '\n\n--- Form Fields ---\n';
+        for (const field of page.formFields) {
+          const fieldName = extractTextFromLayout(field.fieldName.textAnchor, document.text);
+          const fieldValue = extractTextFromLayout(field.fieldValue.textAnchor, document.text);
+          pageText += `${fieldName}: ${fieldValue}\n`;
+        }
+      }
+      
+      if (page.tables) {
+        pageText += '\n\n--- Tables ---\n';
+        for (const table of page.tables) {
+          // Extract table content
+          for (const row of table.bodyRows || []) {
+            for (const cell of row.cells || []) {
+              const cellText = extractTextFromLayout(cell.layout, document.text);
+              pageText += cellText + '\t';
+            }
+            pageText += '\n';
+          }
         }
       }
       
@@ -570,27 +613,53 @@ function extractTextFromLayout(layout, fullText) {
 
 /**
  * Get processing options based on document type
+ * Different modes have different costs:
+ * - Standard: Basic OCR (lowest cost)
+ * - LaTeX: Math OCR enabled (higher cost due to premium features)
+ * - Forms: Form parser with table extraction (higher cost)
  */
 function getProcessingOptionsForType(documentType) {
   switch (documentType) {
     case 'latex':
+      // Enable Math OCR for LaTeX formula extraction
       return {
-        enableFormExtraction: false,
-        enableTableExtraction: true,
-        enableMathExtraction: true // This would be a custom option if available
+        ocrConfig: {
+          enableNativePdfParsing: true,
+          enableImageQualityScores: true,
+          enableSymbol: true,
+          premiumFeatures: {
+            computeStyleInfo: true,
+            enableMathOcr: true,  // Extract math formulas in LaTeX format
+            enableSelectionMarkDetection: false
+          }
+        }
       };
     case 'forms':
+      // Enable form parser features
       return {
-        enableFormExtraction: true,
-        enableTableExtraction: true,
-        enableEntityExtraction: true
+        ocrConfig: {
+          enableNativePdfParsing: true,
+          enableImageQualityScores: true,
+          premiumFeatures: {
+            computeStyleInfo: false,
+            enableMathOcr: false,
+            enableSelectionMarkDetection: true  // For checkboxes in forms
+          }
+        }
       };
     case 'standard':
     default:
+      // Basic OCR without premium features (lowest cost)
       return {
-        enableFormExtraction: false,
-        enableTableExtraction: false,
-        enableEntityExtraction: false
+        ocrConfig: {
+          enableNativePdfParsing: true,
+          enableImageQualityScores: false,
+          premiumFeatures: {
+            computeStyleInfo: false,
+            enableMathOcr: false,
+            enableSelectionMarkDetection: false
+          }
+        }
       };
   }
 }

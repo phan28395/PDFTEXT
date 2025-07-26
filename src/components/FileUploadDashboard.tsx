@@ -76,7 +76,19 @@ export default function FileUploadDashboard({
     });
   }, [user, session]);
   
-  const costPerPage = 1.2;
+  // Different costs per page based on document mode
+  const getCostPerPage = () => {
+    switch (documentMode) {
+      case 'latex':
+        return 2.4; // 2.4 cents per page ($0.024) - Math OCR premium feature
+      case 'forms':
+        return 1.8; // 1.8 cents per page ($0.018) - Form parser features
+      default:
+        return 1.2; // 1.2 cents per page ($0.012) - Standard OCR
+    }
+  };
+  
+  const costPerPage = getCostPerPage();
   const freePages = userData?.free_pages_remaining || 0;
   const creditBalance = userData?.credit_balance || 0;
 
@@ -603,6 +615,14 @@ This is the second paragraph with more content.`;
                   <span className="text-sm font-medium text-gray-700 flex items-center">
                     <DollarSign className="h-4 w-4 mr-1" />
                     Processing Cost
+                    {documentMode !== 'standard' && (
+                      <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${
+                        documentMode === 'latex' ? 'bg-purple-100 text-purple-700' :
+                        'bg-green-100 text-green-700'
+                      }`}>
+                        {documentMode === 'latex' ? 'Math' : 'Forms'}
+                      </span>
+                    )}
                   </span>
                   <span className="text-lg font-bold text-gray-900">
                     {cost.totalCostCents === 0 ? 'FREE' : `$${(cost.totalCostCents / 100).toFixed(2)}`}
@@ -611,13 +631,13 @@ This is the second paragraph with more content.`;
                 
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs text-gray-600">
-                    <span>{cost.totalPages} pages × $0.012</span>
-                    <span className="font-medium">${(cost.totalPages * 0.012).toFixed(2)}</span>
+                    <span>{cost.totalPages} pages × ${(costPerPage / 100).toFixed(3)}</span>
+                    <span className="font-medium">${(cost.totalPages * costPerPage / 100).toFixed(2)}</span>
                   </div>
                   {cost.freePages > 0 && (
                     <div className="flex justify-between text-xs text-green-600">
                       <span>✨ Free pages</span>
-                      <span className="font-medium">-${(cost.freePages * 0.012).toFixed(2)}</span>
+                      <span className="font-medium">-${(cost.freePages * costPerPage / 100).toFixed(2)}</span>
                     </div>
                   )}
                 </div>
