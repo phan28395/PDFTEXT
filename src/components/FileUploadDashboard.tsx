@@ -356,42 +356,42 @@ This is the second paragraph with more content.`;
   return (
     <div className={`w-full h-full flex flex-col ${className}`}>
       {/* Progress Steps */}
-      <div className="flex items-center justify-center mb-4 flex-shrink-0">
-        <div className="flex items-center space-x-8">
+      <div className="flex items-center justify-center mb-3 flex-shrink-0">
+        <div className="flex items-center space-x-6">
           <div className={`flex items-center ${selectedFile ? 'text-green-600' : 'text-gray-400'}`}>
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm ${
               selectedFile ? 'bg-green-100 text-green-600' : 'bg-gray-100'
             }`}>
               1
             </div>
-            <span className="ml-3 font-medium">Upload PDF</span>
+            <span className="ml-2 text-sm font-medium">Upload PDF</span>
           </div>
           
-          <ChevronRight className="h-5 w-5 text-gray-300" />
+          <ChevronRight className="h-4 w-4 text-gray-300" />
           
           <div className={`flex items-center ${processingResult ? 'text-green-600' : selectedFile ? 'text-blue-600' : 'text-gray-400'}`}>
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm ${
               processingResult ? 'bg-green-100 text-green-600' : selectedFile ? 'bg-blue-100 text-blue-600' : 'bg-gray-100'
             }`}>
               2
             </div>
-            <span className="ml-3 font-medium">Process</span>
+            <span className="ml-2 text-sm font-medium">Process</span>
           </div>
           
-          <ChevronRight className="h-5 w-5 text-gray-300" />
+          <ChevronRight className="h-4 w-4 text-gray-300" />
           
           <div className={`flex items-center ${processingResult ? 'text-green-600' : 'text-gray-400'}`}>
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm ${
               processingResult ? 'bg-green-100 text-green-600' : 'bg-gray-100'
             }`}>
               3
             </div>
-            <span className="ml-3 font-medium">Download</span>
+            <span className="ml-2 text-sm font-medium">Download</span>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden h-[calc(100vh-200px)] min-h-[600px]">
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden h-[calc(100vh-180px)] min-h-[500px]">
         <div className="grid grid-cols-1 xl:grid-cols-12 h-full">
           
           {/* Left Panel - Upload & Controls */}
@@ -399,7 +399,7 @@ This is the second paragraph with more content.`;
             {/* Upload Zone */}
             <div
               className={`
-                relative border-2 border-dashed rounded-lg p-4 text-center transition-all duration-200 shadow-sm
+                relative border-2 border-dashed rounded-lg p-3 text-center transition-all duration-200 shadow-sm
                 ${selectedFile ? 'border-green-400 bg-green-50/50' : 
                   dragActive ? 'border-blue-500 bg-blue-50' : 
                   'border-gray-300 hover:border-blue-400 bg-white'}
@@ -422,7 +422,7 @@ This is the second paragraph with more content.`;
               
               {selectedFile ? (
                 <div className="space-y-2">
-                  <FileText className="h-10 w-10 text-green-600 mx-auto" />
+                  <FileText className="h-8 w-8 text-green-600 mx-auto" />
                   <div>
                     <p className="text-sm font-medium text-gray-900 truncate">{selectedFile.name}</p>
                     <p className="text-xs text-gray-500">{formatFileSize(selectedFile.size)}</p>
@@ -439,8 +439,8 @@ This is the second paragraph with more content.`;
                 </div>
               ) : (
                 <>
-                  <Upload className={`h-10 w-10 mx-auto mb-2 ${dragActive ? 'text-blue-600' : 'text-gray-400'}`} />
-                  <p className="text-sm font-medium text-gray-900">
+                  <Upload className={`h-8 w-8 mx-auto mb-1 ${dragActive ? 'text-blue-600' : 'text-gray-400'}`} />
+                  <p className="text-xs font-medium text-gray-900">
                     {dragActive ? 'Drop PDF' : 'Drop PDF here'}
                   </p>
                   <p className="text-xs text-gray-500">or click • Max {maxFileSize}MB</p>
@@ -450,8 +450,8 @@ This is the second paragraph with more content.`;
               {uploadingToCloudinary && (
                 <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg">
                   <div className="text-center">
-                    <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto" />
-                    <p className="text-sm text-gray-600 mt-2">Analyzing PDF...</p>
+                    <Loader2 className="h-6 w-6 animate-spin text-blue-600 mx-auto" />
+                    <p className="text-xs text-gray-600 mt-1">Analyzing PDF...</p>
                   </div>
                 </div>
               )}
@@ -460,7 +460,7 @@ This is the second paragraph with more content.`;
             {/* Document Type */}
             {selectedFile && (
               <div className="space-y-3">
-                <h3 className="text-sm font-medium text-gray-700">Document Type</h3>
+                <h3 className="text-xs font-medium text-gray-700">Document Type</h3>
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     onClick={() => setSelectedDocumentType('standard')}
@@ -508,7 +508,7 @@ This is the second paragraph with more content.`;
             {/* Output Format Selection - BEFORE processing */}
             {selectedFile && !processingResult && (
               <div className="space-y-3">
-                <h3 className="text-sm font-medium text-gray-700">Output Format</h3>
+                <h3 className="text-xs font-medium text-gray-700">Output Format</h3>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => setSelectedOutputFormat('txt')}
@@ -572,7 +572,7 @@ This is the second paragraph with more content.`;
             {/* Page Selection */}
             {cloudinaryUpload && (
               <div className="space-y-3">
-                <h3 className="text-sm font-medium text-gray-700">Pages to Process</h3>
+                <h3 className="text-xs font-medium text-gray-700">Pages to Process</h3>
                 
                 <label className="flex items-center space-x-2">
                   <input
@@ -623,7 +623,7 @@ This is the second paragraph with more content.`;
                     <DollarSign className="h-4 w-4 mr-1" />
                     Processing Cost
                   </span>
-                  <span className="text-xl font-bold text-gray-900">
+                  <span className="text-lg font-bold text-gray-900">
                     {cost.totalCostCents === 0 ? 'FREE' : `$${(cost.totalCostCents / 100).toFixed(2)}`}
                   </span>
                 </div>
@@ -648,21 +648,21 @@ This is the second paragraph with more content.`;
               <button
                 onClick={handleProcess}
                 disabled={uploading || !cost.canAfford || uploadingToCloudinary}
-                className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center font-medium shadow-lg"
+                className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center text-sm font-medium shadow-lg"
               >
                 {uploading ? (
                   <>
-                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Processing... {uploadProgress}%
                   </>
                 ) : uploadingToCloudinary ? (
                   <>
-                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Preparing preview...
                   </>
                 ) : (
                   <>
-                    <Zap className="h-5 w-5 mr-2" />
+                    <Zap className="h-4 w-4 mr-2" />
                     Process {cost.totalPages} pages
                   </>
                 )}
@@ -679,9 +679,9 @@ This is the second paragraph with more content.`;
                 
                 <button
                   onClick={handleDownload}
-                  className="w-full py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-[1.02] flex items-center justify-center font-medium shadow-lg"
+                  className="w-full py-2.5 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-[1.02] flex items-center justify-center text-sm font-medium shadow-lg"
                 >
-                  <Download className="h-5 w-5 mr-2" />
+                  <Download className="h-4 w-4 mr-2" />
                   Download as {selectedOutputFormat.toUpperCase()}
                 </button>
                 
