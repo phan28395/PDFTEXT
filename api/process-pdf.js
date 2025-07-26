@@ -12,10 +12,22 @@ try {
   const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   
+  console.log('Initializing Supabase with:', {
+    hasUrl: !!supabaseUrl,
+    hasKey: !!supabaseKey,
+    urlPrefix: supabaseUrl ? supabaseUrl.substring(0, 30) + '...' : 'not set'
+  });
+  
   if (!supabaseUrl || !supabaseKey) {
-    console.warn('Supabase environment variables not found');
+    console.error('Supabase environment variables not found:', {
+      VITE_SUPABASE_URL: !!process.env.VITE_SUPABASE_URL,
+      NEXT_PUBLIC_SUPABASE_URL: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      SUPABASE_URL: !!process.env.SUPABASE_URL,
+      SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY
+    });
   } else {
     supabase = createClient(supabaseUrl, supabaseKey);
+    console.log('Supabase client initialized successfully');
   }
 } catch (error) {
   console.error('Failed to initialize Supabase:', error);
@@ -60,7 +72,11 @@ export default async function handler(req, res) {
   }
 
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ 
+      error: 'Method not allowed',
+      message: `This endpoint only accepts POST requests. Received: ${req.method}`,
+      hint: 'To process a PDF, please use the application interface at https://pdf-text1.vercel.app'
+    });
   }
 
   if (!client) {
@@ -172,12 +188,27 @@ Page 2 content would appear here...
       return res.status(401).json({ success: false, error: 'Authentication required' });
     }
     
+    // Check if Supabase is initialized
+    if (!supabase) {
+      console.error('Supabase client not initialized');
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Database connection not available',
+        message: 'The server is not properly configured. Please check environment variables.',
+        debug: {
+          hasSupabaseUrl: !!process.env.VITE_SUPABASE_URL || !!process.env.NEXT_PUBLIC_SUPABASE_URL || !!process.env.SUPABASE_URL,
+          hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
+        }
+      });
+    }
+    
     // Get user from auth token
     const { data: { user }, error: authError } = await supabase.auth.getUser(
       authHeader.replace('Bearer ', '')
     );
     
     if (authError || !user) {
+      console.error('Authentication error:', authError);
       return res.status(401).json({ success: false, error: 'Invalid authentication' });
     }
     
@@ -202,8 +233,20 @@ Page 2 content would appear here...
       });
     
     if (recordError) {
-      console.error('Failed to create processing record:', recordError);
-      return res.status(500).json({ success: false, error: 'Failed to create processing record' });
+      console.error('Failed to create processing record:', {
+        error: recordError,
+        details: recordError.details,
+        message: recordError.message,
+        code: recordError.code,
+        userId: userId,
+        hasSupabase: !!supabase
+      });
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Failed to create processing record',
+        details: recordError.message || 'Database connection error',
+        hint: recordError.code === '42501' ? 'Permission denied - check RLS policies' : undefined
+      });
     }
     
     const startTime = Date.now();
