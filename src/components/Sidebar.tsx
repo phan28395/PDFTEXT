@@ -10,6 +10,7 @@ import {
   Home
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useUser } from '@/hooks/useDatabase';
 
 interface SidebarProps {
   className?: string;
@@ -20,6 +21,7 @@ interface SidebarProps {
 export default function Sidebar({ className = '', isOpen = true, onClose }: SidebarProps) {
   const location = useLocation();
   const { user } = useAuth();
+  const { user: userData } = useUser(user?.id);
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
@@ -75,7 +77,14 @@ export default function Sidebar({ className = '', isOpen = true, onClose }: Side
                     {user.email}
                   </p>
                   <p className="text-xs text-gray-500">
-                    Free Plan
+                    {userData ? (
+                      <>
+                        ${((userData.credit_balance || 0) / 100).toFixed(2)} • {' '}
+                        {(userData.free_pages_remaining || 0) + Math.floor((userData.credit_balance || 0) / 1.2)} pages left
+                      </>
+                    ) : (
+                      'Loading...'
+                    )}
                   </p>
                 </div>
               </div>
