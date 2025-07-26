@@ -61,7 +61,7 @@ export default function FileUpload({
   
   // Get user data for free pages and credits
   const { user } = useAuth();
-  const { user: userData } = useUser(user?.id);
+  const { user: userData, refreshUser } = useUser(user?.id);
   
   const costPerPage = 1.2; // 1.2 cents per page ($0.012)
   const freePages = userData?.free_pages_remaining || 0;
@@ -252,6 +252,9 @@ export default function FileUpload({
       setProcessingResult(result);
       toast.success(`Successfully processed ${result.pages} page${result.pages > 1 ? 's' : ''}!`);
       onUploadComplete?.(result);
+      
+      // Refresh user data to update free pages and credit balance
+      await refreshUser();
       
     } catch (error: any) {
       console.error('Processing error:', error);

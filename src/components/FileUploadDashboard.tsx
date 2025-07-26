@@ -63,7 +63,7 @@ export default function FileUploadDashboard({
   const textScrollContainerRef = useRef<HTMLDivElement>(null);
   
   const { user, session } = useAuth();
-  const { user: userData } = useUser(user?.id);
+  const { user: userData, refreshUser } = useUser(user?.id);
   
   // Log session status on mount and when it changes
   useEffect(() => {
@@ -202,6 +202,9 @@ export default function FileUploadDashboard({
       setProcessingResult(result);
       toast.success(`Successfully processed ${result.pages} pages!`);
       onUploadComplete?.(result);
+      
+      // Refresh user data to update free pages and credit balance
+      await refreshUser();
     } catch (error: any) {
       console.error('Processing error:', error);
       setProcessingError(error);

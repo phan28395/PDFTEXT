@@ -74,7 +74,7 @@ export default function FileUploadNew({
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { user } = useAuth();
-  const { user: userData } = useUser(user?.id);
+  const { user: userData, refreshUser } = useUser(user?.id);
   
   const costPerPage = 1.2;
   const freePages = userData?.free_pages_remaining || 0;
@@ -156,6 +156,9 @@ export default function FileUploadNew({
       setCurrentStep('complete');
       toast.success(`Successfully processed ${result.pages} pages!`);
       onUploadComplete?.(result);
+      
+      // Refresh user data to update free pages and credit balance
+      await refreshUser();
     } catch (error: any) {
       setProcessingError(error);
       toast.error(error.message || 'Processing failed');
