@@ -62,8 +62,18 @@ export default function FileUploadDashboard({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const textScrollContainerRef = useRef<HTMLDivElement>(null);
   
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const { user: userData } = useUser(user?.id);
+  
+  // Log session status on mount and when it changes
+  useEffect(() => {
+    console.log('FileUploadDashboard auth status:', {
+      hasUser: !!user,
+      hasSession: !!session,
+      userEmail: user?.email,
+      sessionToken: session?.access_token ? 'Present' : 'Missing'
+    });
+  }, [user, session]);
   
   const costPerPage = 1.2;
   const freePages = userData?.free_pages_remaining || 0;
@@ -166,6 +176,13 @@ export default function FileUploadDashboard({
   const handleProcess = async () => {
     if (!selectedFile) return;
     
+    // Check if user is logged in
+    if (!user || !session) {
+      toast.error('Please log in to process documents');
+      console.error('No active session:', { user, session });
+      return;
+    }
+    
     setUploading(true);
     setUploadProgress(0);
     setProcessingError(null);
@@ -186,8 +203,15 @@ export default function FileUploadDashboard({
       toast.success(`Successfully processed ${result.pages} pages!`);
       onUploadComplete?.(result);
     } catch (error: any) {
+      console.error('Processing error:', error);
       setProcessingError(error);
-      toast.error(error.message || 'Processing failed');
+      
+      // Provide more specific error messages
+      if (error.message?.includes('No active session') || error.message?.includes('Authentication')) {
+        toast.error('Session expired. Please log out and log in again.');
+      } else {
+        toast.error(error.message || 'Processing failed');
+      }
     } finally {
       setUploading(false);
       setUploadProgress(0);

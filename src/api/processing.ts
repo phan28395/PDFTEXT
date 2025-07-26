@@ -97,7 +97,9 @@ export async function processPDF(
   outputFormat: 'text' | 'docx' | 'markdown' | 'html' | 'json' = 'text'
 ): Promise<ProcessingResult> {
   try {
+    console.log('Starting processPDF...');
     const authHeader = await getAuthHeader();
+    console.log('Auth header obtained:', authHeader ? 'Yes' : 'No');
     
     // Create FormData
     const formData = new FormData();
@@ -164,7 +166,11 @@ export async function processPDF(
       
       // Configure request
       xhr.open('POST', '/api/process-pdf');
+      console.log('Setting Authorization header:', authHeader);
       xhr.setRequestHeader('Authorization', authHeader);
+      
+      // Log all request headers for debugging
+      console.log('Request configured. Sending...');
       
       // Send request
       xhr.send(formData);
