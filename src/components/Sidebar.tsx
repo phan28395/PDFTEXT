@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useUser } from '@/hooks/useDatabase';
 
@@ -41,9 +41,9 @@ export default function Sidebar({ className = '', isOpen = true, onClose }: Side
             </div>
           </div>
 
-          {/* User Info */}
+          {/* User Info - Click to go to dashboard */}
           {user && (
-            <div className="p-6 border-b border-gray-200">
+            <Link to="/dashboard" className="block p-6 border-b border-gray-200 hover:bg-gray-50 transition-colors">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                   <span className="text-blue-600 font-semibold text-sm">
@@ -66,7 +66,7 @@ export default function Sidebar({ className = '', isOpen = true, onClose }: Side
                   </p>
                 </div>
               </div>
-            </div>
+            </Link>
           )}
 
           {/* Empty space where navigation was */}
