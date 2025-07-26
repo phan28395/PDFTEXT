@@ -2,16 +2,24 @@ import { DocumentProcessorServiceClient } from '@google-cloud/documentai';
 import formidable from 'formidable';
 import fs from 'fs';
 import { createClient } from '@supabase/supabase-js';
-import PDFParse from 'pdf2pic';
 import path from 'path';
 import archiver from 'archiver';
 import { v4 as uuidv4 } from 'uuid';
 
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.VITE_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+// Initialize Supabase client with error handling
+let supabase;
+try {
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  
+  if (!supabaseUrl || !supabaseKey) {
+    console.warn('Supabase environment variables not found');
+  } else {
+    supabase = createClient(supabaseUrl, supabaseKey);
+  }
+} catch (error) {
+  console.error('Failed to initialize Supabase:', error);
+}
 
 // Initialize Google Document AI client using JSON credentials from environment
 let client;
@@ -41,27 +49,91 @@ export const config = {
 }
 
 export default async function handler(req, res) {
+  // Add CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  // Handle OPTIONS request for CORS preflight
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   if (!client) {
-    // Fallback to dummy processing if Google AI not configured
-    console.log('Google Document AI not configured, using fallback. Error:', initError);
-    return res.status(200).json({
-      success: true,
-      data: {
-        text: `Google Document AI not configured. Error: ${initError}. Please check your environment variables.`,
-        pages: 1,
-        processingTime: 1000,
-        confidence: 0.8,
-        usage: {
-          current: 1,
-          limit: 5,
-          remaining: 4
-        }
+    // For development/testing: provide mock response when Google AI not configured
+    console.log('Google Document AI not configured, using mock response. Error:', initError);
+    
+    try {
+      const form = formidable({
+        maxFileSize: 50 * 1024 * 1024, // 50MB limit
+        keepExtensions: true,
+      });
+
+      const [fields, files] = await form.parse(req);
+      const file = files.file?.[0];
+
+      if (!file) {
+        return res.status(400).json({
+          success: false,
+          error: 'No file uploaded'
+        });
       }
-    });
+
+      // Mock successful response for testing
+      const mockText = `This is a mock response for testing purposes.
+      
+Your PDF file "${file.originalFilename}" has been received successfully.
+
+File size: ${(file.size / 1024).toFixed(2)} KB
+
+Since Google Document AI is not configured, this is a simulated response.
+To enable actual text extraction, please configure the following environment variables:
+- GOOGLE_APPLICATION_CREDENTIALS_JSON
+- GOOGLE_CLOUD_PROJECT_ID
+- GOOGLE_DOCUMENT_AI_PROCESSOR_ID
+
+Page 1 content would appear here...
+Page 2 content would appear here...
+`;
+
+      // Clean up the uploaded file
+      if (fs.existsSync(file.filepath)) {
+        fs.unlinkSync(file.filepath);
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          text: mockText,
+          pages: 2,
+          processingTime: 500,
+          confidence: 0.95,
+          usage: {
+            current: 1,
+            limit: 999999,
+            remaining: 999998
+          },
+          // Add expected fields for frontend
+          recordId: uuidv4(),
+          filename: file.originalFilename || 'document.pdf',
+          originalText: mockText,
+          outputFormat: fields.outputFormat?.[0] || 'text',
+          documentType: fields.documentType?.[0] || 'standard',
+          downloadFormat: fields.downloadFormat?.[0] || 'combined',
+          downloadUrls: []
+        }
+      });
+    } catch (error) {
+      console.error('Mock processing error:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to process upload'
+      });
+    }
   }
 
   try {

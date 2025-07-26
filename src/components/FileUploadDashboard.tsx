@@ -1,5 +1,5 @@
 import { useState, useRef, DragEvent, ChangeEvent, useEffect } from 'react';
-import { Upload, X, FileText, Loader2, Download, ChevronLeft, ChevronRight, Maximize2, DollarSign, Zap, FileSearch, Sparkles } from 'lucide-react';
+import { Upload, X, FileText, Loader2, Download, ChevronLeft, ChevronRight, Maximize2, DollarSign, Zap, FileSearch, Sparkles, FileJson, FileCode, FileSpreadsheet, AlignLeft, Code } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { processPDF, validateFile as apiValidateFile, ProcessingResult, ProcessingError, downloadTextFile, formatFileSize } from '@/api/processing';
 import { DocumentType } from './DocumentTypeSelector';
@@ -53,8 +53,14 @@ export default function FileUploadDashboard({
   const [enlargedImage, setEnlargedImage] = useState<number | null>(null);
   const [previewPages, setPreviewPages] = useState<number[]>([]);
   
+  // Output format selection
+  type OutputFormat = 'txt' | 'markdown' | 'docx' | 'csv' | 'json';
+  const [selectedOutputFormat, setSelectedOutputFormat] = useState<OutputFormat>('txt');
+  const [showTextPreview, setShowTextPreview] = useState(false);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const textScrollContainerRef = useRef<HTMLDivElement>(null);
   
   const { user } = useAuth();
   const { user: userData } = useUser(user?.id);
@@ -246,11 +252,55 @@ export default function FileUploadDashboard({
     }
   };
 
+  // Format text based on selected output format
+  const formatTextForOutput = (text: string): string => {
+    const pages = text.split('\n\n---\n\n'); // Assuming pages are separated by this delimiter
+    
+    switch (selectedOutputFormat) {
+      case 'markdown':
+        return pages.map((page, idx) => `# Page ${idx + 1}\n\n${page}`).join('\n\n---\n\n');
+      
+      case 'json':
+        return JSON.stringify({
+          document: selectedFile?.name,
+          pages: pages.map((page, idx) => ({
+            pageNumber: idx + 1,
+            content: page
+          })),
+          totalPages: pages.length,
+          processedAt: new Date().toISOString()
+        }, null, 2);
+      
+      case 'csv':
+        // Simple CSV format with page number and content
+        const csvContent = 'Page,Content\n' + 
+          pages.map((page, idx) => `${idx + 1},"${page.replace(/"/g, '""')}"`).join('\n');
+        return csvContent;
+      
+      case 'docx':
+        // For DOCX, we'll return formatted text that indicates page breaks
+        return pages.map((page, idx) => `[Page ${idx + 1}]\n\n${page}`).join('\n\n[Page Break]\n\n');
+      
+      default: // 'txt'
+        return text;
+    }
+  };
+
   // Download result
   const handleDownload = () => {
     if (processingResult && selectedFile) {
-      downloadTextFile(processingResult.text, selectedFile.name);
-      toast.success('Downloaded!');
+      const formattedText = formatTextForOutput(processingResult.text);
+      const extension = selectedOutputFormat === 'markdown' ? 'md' : selectedOutputFormat;
+      const fileName = selectedFile.name.replace('.pdf', `.${extension}`);
+      
+      // For DOCX, we'd need a library like docx.js
+      if (selectedOutputFormat === 'docx') {
+        toast.error('DOCX export coming soon!');
+        return;
+      }
+      
+      downloadTextFile(formattedText, fileName);
+      toast.success(`Downloaded as ${extension.toUpperCase()}!`);
     }
   };
 
@@ -478,25 +528,94 @@ export default function FileUploadDashboard({
               </button>
             )}
 
-            {/* Success State */}
+            {/* Success State with Format Selection */}
             {processingResult && (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
                   <p className="text-green-700 font-medium">Successfully processed!</p>
                   <p className="text-sm text-green-600">{processingResult.pages} pages extracted</p>
                 </div>
+                
+                {/* Output Format Selection */}
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium text-gray-700">Choose Output Format</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => setSelectedOutputFormat('txt')}
+                      className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center ${
+                        selectedOutputFormat === 'txt' 
+                          ? 'border-blue-500 bg-blue-50' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <AlignLeft className={`h-5 w-5 mb-1 ${
+                        selectedOutputFormat === 'txt' ? 'text-blue-600' : 'text-gray-600'
+                      }`} />
+                      <span className="text-xs font-medium">Plain Text</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => setSelectedOutputFormat('markdown')}
+                      className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center ${
+                        selectedOutputFormat === 'markdown' 
+                          ? 'border-purple-500 bg-purple-50' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <FileCode className={`h-5 w-5 mb-1 ${
+                        selectedOutputFormat === 'markdown' ? 'text-purple-600' : 'text-gray-600'
+                      }`} />
+                      <span className="text-xs font-medium">Markdown</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => setSelectedOutputFormat('json')}
+                      className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center ${
+                        selectedOutputFormat === 'json' 
+                          ? 'border-orange-500 bg-orange-50' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <FileJson className={`h-5 w-5 mb-1 ${
+                        selectedOutputFormat === 'json' ? 'text-orange-600' : 'text-gray-600'
+                      }`} />
+                      <span className="text-xs font-medium">JSON</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => setSelectedOutputFormat('csv')}
+                      className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center ${
+                        selectedOutputFormat === 'csv' 
+                          ? 'border-green-500 bg-green-50' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <FileSpreadsheet className={`h-5 w-5 mb-1 ${
+                        selectedOutputFormat === 'csv' ? 'text-green-600' : 'text-gray-600'
+                      }`} />
+                      <span className="text-xs font-medium">CSV</span>
+                    </button>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => setShowTextPreview(!showTextPreview)}
+                  className="w-full py-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  {showTextPreview ? 'Hide' : 'Show'} Text Preview
+                </button>
                 
                 <button
                   onClick={handleDownload}
                   className="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center"
                 >
                   <Download className="h-5 w-5 mr-2" />
-                  Download Text
+                  Download as {selectedOutputFormat.toUpperCase()}
                 </button>
                 
                 <button
                   onClick={reset}
-                  className="w-full py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                  className="w-full py-2 text-sm text-gray-600 hover:text-gray-700"
                 >
                   Process Another File
                 </button>
@@ -524,9 +643,37 @@ export default function FileUploadDashboard({
             )}
           </div>
 
-          {/* Right Panel - Preview */}
+          {/* Right Panel - Preview or Text Results */}
           <div className="xl:col-span-3 bg-white p-8">
-            {!selectedFile ? (
+            {/* Show text results if processing is complete and preview is toggled */}
+            {processingResult && showTextPreview ? (
+              <div className="h-full flex flex-col">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900">
+                      Extracted Text Preview
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Format: {selectedOutputFormat.toUpperCase()} • {processingResult.pages} pages
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowTextPreview(false)}
+                    className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-lg hover:bg-gray-200"
+                  >
+                    <X className="h-3 w-3 inline mr-1" />
+                    Close Preview
+                  </button>
+                </div>
+                
+                {/* Text Preview Area */}
+                <div className="flex-1 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                  <pre className="h-full overflow-auto p-6 text-sm text-gray-800 font-mono whitespace-pre-wrap">
+                    {formatTextForOutput(processingResult.text)}
+                  </pre>
+                </div>
+              </div>
+            ) : !selectedFile ? (
               <div className="h-full flex items-center justify-center text-center bg-gray-50 rounded-xl">
                 <div>
                   <FileText className="h-20 w-20 text-gray-300 mx-auto mb-4" />
@@ -546,16 +693,30 @@ export default function FileUploadDashboard({
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h3 className="text-xl font-semibold text-gray-900">
-                      Document Preview
+                      {processingResult ? 'Document Processed' : 'Document Preview'}
                     </h3>
                     <p className="text-sm text-gray-500 mt-1">
-                      {processAllPages ? `Showing ${previewPages.filter(p => p !== -1).length} of ${cloudinaryUpload.pages} pages` : `Pages ${startPage}-${endPage}`}
+                      {processingResult 
+                        ? `✅ ${processingResult.pages} pages successfully extracted`
+                        : processAllPages 
+                          ? `Showing ${previewPages.filter(p => p !== -1).length} of ${cloudinaryUpload.pages} pages` 
+                          : `Pages ${startPage}-${endPage}`}
                     </p>
                   </div>
-                  <p className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-lg">
-                    <Maximize2 className="h-3 w-3 inline mr-1" />
-                    Click to enlarge
-                  </p>
+                  {processingResult ? (
+                    <button
+                      onClick={() => setShowTextPreview(true)}
+                      className="text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-lg hover:bg-blue-100 font-medium"
+                    >
+                      <FileText className="h-3 w-3 inline mr-1" />
+                      View Extracted Text
+                    </button>
+                  ) : (
+                    <p className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-lg">
+                      <Maximize2 className="h-3 w-3 inline mr-1" />
+                      Click to enlarge
+                    </p>
+                  )}
                 </div>
                 
                 {/* Preview Images */}
@@ -597,15 +758,26 @@ export default function FileUploadDashboard({
                           className="flex-shrink-0 cursor-pointer hover:scale-105 transition-transform"
                           onClick={() => setEnlargedImage(page)}
                         >
-                          <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow">
+                          <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow relative">
+                            {processingResult && (
+                              <div className="absolute inset-0 bg-green-500 bg-opacity-10 z-10 flex items-center justify-center">
+                                <div className="bg-green-100 rounded-full p-3">
+                                  <FileText className="h-8 w-8 text-green-600" />
+                                </div>
+                              </div>
+                            )}
                             <img 
                               src={imageUrl}
                               alt={`Page ${page}`}
                               className="h-[450px] w-auto object-contain bg-gray-50"
                               loading="lazy"
                             />
-                            <div className="px-4 py-3 bg-gradient-to-r from-gray-800 to-gray-900 text-white text-center">
-                              <span className="font-medium">Page {page}</span>
+                            <div className={`px-4 py-3 text-white text-center ${
+                              processingResult 
+                                ? 'bg-gradient-to-r from-green-600 to-green-700' 
+                                : 'bg-gradient-to-r from-gray-800 to-gray-900'
+                            }`}>
+                              <span className="font-medium">Page {page} {processingResult && '✓'}</span>
                             </div>
                           </div>
                         </div>
