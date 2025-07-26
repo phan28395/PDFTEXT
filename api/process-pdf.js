@@ -263,21 +263,24 @@ Page 2 content would appear here...
     let totalPages = 0;
     let totalConfidence = 0;
     
-    // First, get total page count to validate range
+    // Estimate page count - we can't send the entire document if it's over 30 pages
     let documentPageCount = 0;
-    try {
-      const countRequest = {
-        name: processorName,
-        rawDocument: {
-          content: fileBuffer.toString('base64'),
-          mimeType: 'application/pdf',
-        },
-      };
-      const [countResult] = await client.processDocument(countRequest);
-      documentPageCount = countResult.document.pages ? countResult.document.pages.length : 1;
-    } catch (error) {
-      console.error('Error getting page count:', error);
-      documentPageCount = 1; // Default fallback
+    
+    // If endPage is specified, use it as minimum page count
+    if (endPage) {
+      documentPageCount = endPage;
+      console.log(`Using specified end page as document page count: ${documentPageCount}`);
+    } else {
+      // Estimate based on file size
+      const fileSizeMB = fileBuffer.length / (1024 * 1024);
+      documentPageCount = Math.max(Math.ceil(fileSizeMB * 5), 1); // Rough estimate: 5 pages per MB
+      console.log(`Estimated ${documentPageCount} pages based on file size (${fileSizeMB.toFixed(2)} MB)`);
+      
+      // If the estimate is close to 30, be conservative and assume more
+      if (documentPageCount >= 25 && documentPageCount <= 35) {
+        documentPageCount = 40; // Assume more to trigger batch processing
+        console.log(`Adjusted page count estimate to ${documentPageCount} to ensure batch processing if needed`);
+      }
     }
     
     // Validate and adjust page range
@@ -286,15 +289,27 @@ Page 2 content would appear here...
     const validEndPage = Math.max(validStartPage, Math.min(actualEndPage, documentPageCount));
     const pagesToProcess = validEndPage - validStartPage + 1;
     
-    if (processIndividually) {
-      // Process pages individually with page range support
-      const processedData = await processDocumentIndividually(
+    // Check if we need to batch process due to page limit
+    const GOOGLE_DOC_AI_PAGE_LIMIT = 30;
+    
+    // Log document info
+    console.log(`Document info: ${documentPageCount} total pages, processing pages ${validStartPage}-${validEndPage} (${pagesToProcess} pages)`);
+    
+    if (processIndividually || pagesToProcess > GOOGLE_DOC_AI_PAGE_LIMIT) {
+      // Process in batches for documents exceeding the page limit
+      if (pagesToProcess > GOOGLE_DOC_AI_PAGE_LIMIT) {
+        console.log(`⚠️ Requested ${pagesToProcess} pages exceeds Google Document AI's ${GOOGLE_DOC_AI_PAGE_LIMIT}-page limit.`);
+      }
+      console.log(`Processing ${pagesToProcess} pages in batches (limit: ${GOOGLE_DOC_AI_PAGE_LIMIT} per batch)`);
+      
+      const processedData = await processDocumentInBatches(
         fileBuffer, 
         processorName, 
         client, 
         documentType,
         validStartPage,
-        validEndPage
+        validEndPage,
+        GOOGLE_DOC_AI_PAGE_LIMIT
       );
       
       processedPages = processedData.pages;
@@ -485,7 +500,147 @@ Page 2 content would appear here...
 }
 
 /**
+ * Process document in batches to handle Google Document AI's 30-page limit
+ */
+async function processDocumentInBatches(fileBuffer, processorName, client, documentType, startPage = 1, endPage = null, batchSize = 30) {
+  try {
+    const allProcessedPages = [];
+    let allCombinedText = '';
+    let totalConfidence = 0;
+    let processedPageCount = 0;
+    
+    // Process in batches
+    for (let batchStart = startPage; batchStart <= endPage; batchStart += batchSize) {
+      const batchEnd = Math.min(batchStart + batchSize - 1, endPage);
+      console.log(`Processing batch: pages ${batchStart}-${batchEnd}`);
+      
+      // Configure individual page selector for this batch
+      const individualPageSelector = {
+        pages: []
+      };
+      
+      // Add pages to process in this batch (0-indexed)
+      for (let page = batchStart; page <= batchEnd; page++) {
+        individualPageSelector.pages.push(page - 1);
+      }
+      
+      console.log(`Batch ${batchStart}-${batchEnd}: Processing ${individualPageSelector.pages.length} pages with indices [${individualPageSelector.pages.slice(0, 3).join(', ')}${individualPageSelector.pages.length > 3 ? ', ...' : ''}]`);
+      
+      const request = {
+        name: processorName,
+        rawDocument: {
+          content: fileBuffer.toString('base64'),
+          mimeType: 'application/pdf',
+        },
+        processOptions: {
+          ...getProcessingOptionsForType(documentType),
+          individualPageSelector: individualPageSelector
+        }
+      };
+      
+      try {
+        const [result] = await client.processDocument(request);
+        const document = result.document;
+        
+        // Process batch results
+        const batchResults = processBatchResults(document, batchStart, batchEnd, documentType);
+        
+        // Combine results
+        allProcessedPages.push(...batchResults.pages);
+        allCombinedText += batchResults.combinedText;
+        totalConfidence += batchResults.totalConfidence;
+        processedPageCount += batchResults.pageCount;
+        
+      } catch (batchError) {
+        console.error(`Error processing batch ${batchStart}-${batchEnd}:`, batchError);
+        
+        // Check if it's the 30-page limit error
+        if (batchError.message?.includes('Document pages exceed the limit')) {
+          console.error('Google Document AI page limit exceeded. This should not happen with batch processing.');
+          throw new Error(`Failed to process pages ${batchStart}-${batchEnd}. The document may be corrupted or have issues with page detection.`);
+        }
+        
+        // Continue with other batches even if one fails
+        // Add placeholder for failed pages
+        for (let page = batchStart; page <= batchEnd; page++) {
+          allProcessedPages.push({
+            pageNumber: page,
+            text: `[Error processing page ${page}]`,
+            confidence: 0
+          });
+        }
+      }
+    }
+    
+    console.log(`Batch processing completed: ${processedPageCount} pages processed successfully out of ${endPage - startPage + 1} requested`);
+    
+    return {
+      pages: allProcessedPages,
+      combinedText: allCombinedText,
+      pageCount: processedPageCount,
+      averageConfidence: processedPageCount > 0 ? totalConfidence / processedPageCount : 0
+    };
+    
+  } catch (error) {
+    console.error('Batch processing error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Process results from a batch of pages
+ */
+function processBatchResults(document, batchStart, batchEnd, documentType) {
+  const processedPages = [];
+  let combinedText = '';
+  let totalConfidence = 0;
+  let pageCount = 0;
+  
+  // Use the pure document.text for this batch
+  const batchText = document.text || '';
+  combinedText = batchText;
+  
+  // Calculate pages processed in this batch
+  const batchPageCount = batchEnd - batchStart + 1;
+  const textPerPage = Math.ceil(batchText.length / batchPageCount);
+  
+  // Split text for individual pages
+  for (let i = 0; i < batchPageCount; i++) {
+    const pageNumber = batchStart + i;
+    const startIndex = i * textPerPage;
+    const endIndex = Math.min((i + 1) * textPerPage, batchText.length);
+    const pageText = batchText.substring(startIndex, endIndex);
+    const confidence = document.pages?.[i]?.detectedLanguages?.[0]?.confidence || 0.95;
+    
+    processedPages.push({
+      pageNumber: pageNumber,
+      text: pageText,
+      confidence: confidence
+    });
+    
+    totalConfidence += confidence;
+    pageCount++;
+  }
+  
+  // Log entities if Math OCR was enabled (for LaTeX mode) - for debugging
+  if (document.entities && documentType === 'latex') {
+    console.log(`[LaTeX Mode] Found ${document.entities.length} entities in batch ${batchStart}-${batchEnd}`);
+    document.entities.forEach((entity, index) => {
+      console.log(`Entity ${index}: type=${entity.type || entity.type_}, text=${entity.mentionText || entity.mention_text}`);
+    });
+  }
+  
+  return {
+    pages: processedPages,
+    combinedText: combinedText,
+    totalConfidence: totalConfidence,
+    pageCount: pageCount
+  };
+}
+
+/**
  * Process document pages individually using Google Document AI
+ * (Deprecated - use processDocumentInBatches instead)
  */
 async function processDocumentIndividually(fileBuffer, processorName, client, documentType, startPage = 1, endPage = null) {
   try {
