@@ -17,7 +17,7 @@ import FileUploadDashboard from '@/components/FileUploadDashboard';
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const { user: userData, loading: userLoading } = useUser(user?.id);
+  const { user: userData, loading: userLoading, refreshUser } = useUser(user?.id);
 
   // Calculate usage statistics - pay per use model with free trial
   const creditBalance = userData?.credit_balance || 0; // Credits in cents
@@ -64,8 +64,10 @@ export default function Dashboard() {
               </div>
               <FileUploadDashboard 
                 className="w-full"
-                onUploadComplete={(result) => {
+                onUploadComplete={async (result) => {
                   console.log('Processing completed:', result);
+                  // Refresh user data to update the free pages display
+                  await refreshUser();
                 }}
               />
             </div>
