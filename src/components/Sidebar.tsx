@@ -78,6 +78,20 @@ export default function Sidebar({ className = '', isOpen = true, onClose }: Side
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
               Document Mode
             </h3>
+
+            <button
+              onClick={() => setDocumentMode('latex')}
+              className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all ${
+                documentMode === 'latex'
+                  ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <Sparkles className={`h-5 w-5 ${
+                documentMode === 'latex' ? 'text-purple-600' : 'text-gray-400'
+              }`} />
+              <span className="font-medium">Math/LaTeX</span>
+            </button>
             
             <button
               onClick={() => setDocumentMode('standard')}
@@ -92,20 +106,7 @@ export default function Sidebar({ className = '', isOpen = true, onClose }: Side
               }`} />
               <span className="font-medium">Text Document</span>
             </button>
-            
-            <button
-              onClick={() => setDocumentMode('latex')}
-              className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all ${
-                documentMode === 'latex'
-                  ? 'bg-purple-50 text-purple-700 border border-purple-200'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              <Sparkles className={`h-5 w-5 ${
-                documentMode === 'latex' ? 'text-purple-600' : 'text-gray-400'
-              }`} />
-              <span className="font-medium">Math/LaTeX</span>
-            </button>
+          
             
             <button
               onClick={() => setDocumentMode('forms')}

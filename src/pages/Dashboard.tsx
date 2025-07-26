@@ -6,7 +6,9 @@ import {
   Calendar,
   AlertCircle,
   Crown,
-  Plus
+  Plus,
+  Sparkles,
+  FileSearch
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -14,10 +16,12 @@ import { useUser } from '@/hooks/useDatabase';
 import { DashboardLayout } from '@/components/Layout';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import FileUploadDashboard from '@/components/FileUploadDashboard';
+import { useDocumentMode } from '@/contexts/DocumentModeContext';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const { user: userData, loading: userLoading, refreshUser } = useUser(user?.id);
+  const { documentMode } = useDocumentMode();
 
   // Debug logging
   console.log('Dashboard userData:', {
@@ -39,6 +43,38 @@ export default function Dashboard() {
   const stats = { totalFiles: userData?.files_processed || 0 };
   const statsLoading = userLoading;
 
+  // Get dynamic content based on document mode
+  const getModeContent = () => {
+    switch (documentMode) {
+      case 'latex':
+        return {
+          icon: Sparkles,
+          title: 'Extract Mathematical Content with AI',
+          description: 'Perfect for academic papers, research documents, and mathematical formulas',
+          features: ['LaTeX syntax preservation', 'Mathematical equation extraction', 'Academic formatting'],
+          color: 'purple'
+        };
+      case 'forms':
+        return {
+          icon: FileSearch,
+          title: 'Extract Structured Data from Forms',
+          description: 'Optimized for forms, tables, invoices, and structured documents',
+          features: ['Table structure detection', 'Form field extraction', 'Data organization'],
+          color: 'green'
+        };
+      default: // 'standard'
+        return {
+          icon: FileText,
+          title: 'Convert PDF to Text with AI',
+          description: 'Extract text from books, articles, reports, and general documents',
+          features: ['Paragraph preservation', 'Clean text extraction', 'Multi-format export'],
+          color: 'blue'
+        };
+    }
+  };
+
+  const modeContent = getModeContent();
+
 
   return (
       <DashboardLayout>
@@ -47,12 +83,38 @@ export default function Dashboard() {
             {/* Quick Upload Section */}
             {(userLoading || hasCredits) && (
             <div className="">
-              <div className="text-center mb-3">
-                <h1 className="text-xl font-bold text-gray-900 mb-1">
-                  Convert PDF to Text with AI
-                </h1>
+              <div className="text-center mb-4">
+                <div className="flex items-center justify-center mb-2">
+                  <modeContent.icon className={`h-8 w-8 mr-3 ${
+                    modeContent.color === 'purple' ? 'text-purple-600' :
+                    modeContent.color === 'green' ? 'text-green-600' :
+                    'text-blue-600'
+                  }`} />
+                  <h1 className="text-2xl font-bold text-gray-900">
+                    {modeContent.title}
+                  </h1>
+                </div>
+                <p className="text-gray-600 mb-3 max-w-2xl mx-auto">
+                  {modeContent.description}
+                </p>
+                <div className="flex items-center justify-center gap-4 text-sm mb-3">
+                  {modeContent.features.map((feature, index) => (
+                    <span key={index} className={`inline-flex items-center ${
+                      modeContent.color === 'purple' ? 'text-purple-700' :
+                      modeContent.color === 'green' ? 'text-green-700' :
+                      'text-blue-700'
+                    }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full mr-2 ${
+                        modeContent.color === 'purple' ? 'bg-purple-400' :
+                        modeContent.color === 'green' ? 'bg-green-400' :
+                        'bg-blue-400'
+                      }`} />
+                      {feature}
+                    </span>
+                  ))}
+                </div>
                 {!userLoading && isTrialUser && (
-                  <p className="text-sm mt-1">
+                  <p className="text-sm mt-2">
                     <span className="inline-flex items-center gap-2">
                       <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-medium">
                         {freePages} free pages remaining
