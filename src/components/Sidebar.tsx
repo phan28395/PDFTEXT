@@ -1,14 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
-import { 
-  FileText, 
-  Upload, 
-  History, 
-  BarChart3, 
-  Settings, 
-  CreditCard, 
-  HelpCircle,
-  Home
-} from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useUser } from '@/hooks/useDatabase';
 
@@ -23,18 +13,6 @@ export default function Sidebar({ className = '', isOpen = true, onClose }: Side
   const { user } = useAuth();
   const { user: userData } = useUser(user?.id);
 
-  const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: Home },
-    { name: 'Upload PDF', href: '/upload', icon: Upload },
-    { name: 'History', href: '/history', icon: History },
-    { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-    { name: 'Settings', href: '/settings', icon: Settings },
-    { name: 'Help', href: '/help', icon: HelpCircle },
-  ];
-
-  const isActivePath = (href: string) => {
-    return location.pathname === href;
-  };
 
   return (
     <>
@@ -91,36 +69,8 @@ export default function Sidebar({ className = '', isOpen = true, onClose }: Side
             </div>
           )}
 
-          {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-1">
-            {navigation.map((item) => {
-              const isActive = isActivePath(item.href);
-              const Icon = item.icon;
-              
-              return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  onClick={onClose}
-                  className={`
-                    group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors
-                    ${isActive
-                      ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                    }
-                  `}
-                >
-                  <Icon 
-                    className={`
-                      mr-3 h-5 w-5 flex-shrink-0 transition-colors
-                      ${isActive ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'}
-                    `} 
-                  />
-                  {item.name}
-                </Link>
-              );
-            })}
-          </nav>
+          {/* Empty space where navigation was */}
+          <div className="flex-1"></div>
 
         </div>
       </aside>
