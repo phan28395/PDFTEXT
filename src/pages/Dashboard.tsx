@@ -42,31 +42,32 @@ export default function Dashboard() {
   return (
       <DashboardLayout>
         <ErrorBoundary>
-          <div className="p-6 space-y-6">
+          <div className="p-4 lg:p-8 space-y-8 max-w-[1600px] mx-auto">
             {/* Quick Upload Section */}
             {hasCredits && (
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-100">
-              <div className="max-w-3xl mx-auto">
-                <div className="text-center mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                    Convert PDF to Text
-                  </h2>
-                  <p className="text-gray-600">
-                    {isTrialUser ? 
-                      `Try for free! ${freePages} pages remaining, then $0.012 per page` :
-                      'Upload your PDF file and extract text instantly with AI-powered processing'
-                    }
-                  </p>
-                </div>
-                <FileUploadDashboard 
-                  className="max-w-7xl mx-auto"
-                  onUploadComplete={(result) => {
-                    // Refresh stats and recent records after successful upload
-                    // This will be handled by the hooks automatically
-                    console.log('Processing completed:', result);
-                  }}
-                />
+            <div className="">
+              <div className="text-center mb-8">
+                <h1 className="text-3xl font-bold text-gray-900 mb-3">
+                  Convert PDF to Text with AI
+                </h1>
+                <p className="text-lg text-gray-600">
+                  {isTrialUser ? 
+                    <span className="inline-flex items-center gap-2">
+                      <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
+                        {freePages} free pages remaining
+                      </span>
+                      <span>Then just $0.012 per page</span>
+                    </span> :
+                    'Fast, accurate text extraction powered by Google Document AI'
+                  }
+                </p>
               </div>
+              <FileUploadDashboard 
+                className="w-full"
+                onUploadComplete={(result) => {
+                  console.log('Processing completed:', result);
+                }}
+              />
             </div>
           )}
         

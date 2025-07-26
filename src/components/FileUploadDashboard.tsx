@@ -269,18 +269,18 @@ export default function FileUploadDashboard({
 
   return (
     <div className={`w-full ${className}`}>
-      <div className="bg-white rounded-xl shadow-lg border overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-3 min-h-[600px]">
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div className="grid grid-cols-1 xl:grid-cols-5 min-h-[700px]">
           
           {/* Left Panel - Upload & Controls */}
-          <div className="p-6 border-r border-gray-200 space-y-6">
+          <div className="xl:col-span-2 p-8 bg-gradient-to-br from-gray-50 to-gray-100 border-r border-gray-200 space-y-6">
             {/* Upload Zone */}
             <div
               className={`
-                relative border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200
-                ${selectedFile ? 'border-green-300 bg-green-50' : 
-                  dragActive ? 'border-blue-400 bg-blue-50' : 
-                  'border-gray-300 hover:border-blue-400'}
+                relative border-2 border-dashed rounded-xl p-10 text-center transition-all duration-200 shadow-sm
+                ${selectedFile ? 'border-green-400 bg-green-50/50' : 
+                  dragActive ? 'border-blue-500 bg-blue-50' : 
+                  'border-gray-300 hover:border-blue-400 bg-white'}
                 ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
               `}
               onDragEnter={handleDragIn}
@@ -317,11 +317,11 @@ export default function FileUploadDashboard({
                 </div>
               ) : (
                 <>
-                  <Upload className={`h-12 w-12 mx-auto mb-3 ${dragActive ? 'text-blue-600' : 'text-gray-400'}`} />
-                  <p className="text-sm font-medium text-gray-900">
-                    {dragActive ? 'Drop your PDF here' : 'Drop PDF or click to browse'}
+                  <Upload className={`h-16 w-16 mx-auto mb-4 ${dragActive ? 'text-blue-600' : 'text-gray-400'}`} />
+                  <p className="text-lg font-medium text-gray-900">
+                    {dragActive ? 'Drop your PDF here' : 'Drag & drop your PDF here'}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">Up to {maxFileSize}MB</p>
+                  <p className="text-sm text-gray-500 mt-2">or click to browse • Max {maxFileSize}MB</p>
                 </>
               )}
               
@@ -431,26 +431,26 @@ export default function FileUploadDashboard({
 
             {/* Cost Preview */}
             {selectedFile && (
-              <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 flex items-center">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-100">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-medium text-gray-700 flex items-center">
                     <DollarSign className="h-4 w-4 mr-1" />
-                    Cost Preview
+                    Processing Cost
                   </span>
-                  <span className="font-semibold text-gray-900">
+                  <span className="text-2xl font-bold text-gray-900">
                     {cost.totalCostCents === 0 ? 'FREE' : `$${(cost.totalCostCents / 100).toFixed(2)}`}
                   </span>
                 </div>
                 
-                <div className="text-xs space-y-1">
-                  <div className="flex justify-between text-gray-600">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm text-gray-600">
                     <span>{cost.totalPages} pages × $0.012</span>
-                    <span>${(cost.totalPages * 0.012).toFixed(2)}</span>
+                    <span className="font-medium">${(cost.totalPages * 0.012).toFixed(2)}</span>
                   </div>
                   {cost.freePages > 0 && (
-                    <div className="flex justify-between text-green-600">
-                      <span>Free pages discount</span>
-                      <span>-${(cost.freePages * 0.012).toFixed(2)}</span>
+                    <div className="flex justify-between text-sm text-green-600">
+                      <span>✨ Free pages discount</span>
+                      <span className="font-medium">-${(cost.freePages * 0.012).toFixed(2)}</span>
                     </div>
                   )}
                 </div>
@@ -525,12 +525,13 @@ export default function FileUploadDashboard({
           </div>
 
           {/* Right Panel - Preview */}
-          <div className="lg:col-span-2 bg-gray-50 p-6">
+          <div className="xl:col-span-3 bg-white p-8">
             {!selectedFile ? (
-              <div className="h-full flex items-center justify-center text-center">
+              <div className="h-full flex items-center justify-center text-center bg-gray-50 rounded-xl">
                 <div>
-                  <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">Upload a PDF to see preview</p>
+                  <FileText className="h-20 w-20 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-700 mb-2">No document selected</h3>
+                  <p className="text-gray-500">Upload a PDF to see page previews</p>
                 </div>
               </div>
             ) : !cloudinaryUpload ? (
@@ -542,11 +543,19 @@ export default function FileUploadDashboard({
               </div>
             ) : (
               <div className="h-full flex flex-col">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-medium text-gray-900">
-                    Preview ({processAllPages ? `All ${cloudinaryUpload.pages} pages` : `Pages ${startPage}-${endPage}`})
-                  </h3>
-                  <p className="text-sm text-gray-500">Click image to enlarge</p>
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900">
+                      Document Preview
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {processAllPages ? `Showing ${previewPages.filter(p => p !== -1).length} of ${cloudinaryUpload.pages} pages` : `Pages ${startPage}-${endPage}`}
+                    </p>
+                  </div>
+                  <p className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-lg">
+                    <Maximize2 className="h-3 w-3 inline mr-1" />
+                    Click to enlarge
+                  </p>
                 </div>
                 
                 {/* Preview Images */}
@@ -588,15 +597,15 @@ export default function FileUploadDashboard({
                           className="flex-shrink-0 cursor-pointer hover:scale-105 transition-transform"
                           onClick={() => setEnlargedImage(page)}
                         >
-                          <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                          <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow">
                             <img 
                               src={imageUrl}
                               alt={`Page ${page}`}
-                              className="h-[400px] w-auto object-contain"
+                              className="h-[450px] w-auto object-contain bg-gray-50"
                               loading="lazy"
                             />
-                            <div className="px-3 py-2 bg-gray-900 text-white text-center text-sm">
-                              Page {page}
+                            <div className="px-4 py-3 bg-gradient-to-r from-gray-800 to-gray-900 text-white text-center">
+                              <span className="font-medium">Page {page}</span>
                             </div>
                           </div>
                         </div>
