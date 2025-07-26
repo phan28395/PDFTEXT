@@ -66,10 +66,22 @@ export interface ProcessingError {
 async function getAuthHeader(): Promise<string> {
   const { data: { session }, error } = await supabase.auth.getSession();
   
-  if (error || !session?.access_token) {
-    throw new Error('Authentication required. Please log in.');
+  if (error) {
+    console.error('Error getting session:', error);
+    throw new Error(`Authentication error: ${error.message}`);
   }
   
+  if (!session) {
+    console.error('No session found - user may need to log in');
+    throw new Error('No active session. Please log in to continue.');
+  }
+  
+  if (!session.access_token) {
+    console.error('Session exists but no access token');
+    throw new Error('Invalid session. Please log out and log in again.');
+  }
+  
+  console.log('Auth header created successfully');
   return `Bearer ${session.access_token}`;
 }
 
