@@ -716,7 +716,7 @@ This is the second paragraph with more content.`;
           </div>
 
           {/* Middle Panel - Document Preview */}
-          <div className="xl:col-span-2 bg-white p-3 border-r border-gray-200 h-full overflow-hidden">
+          <div className="xl:col-span-2 bg-white p-2 border-r border-gray-200 h-full overflow-hidden">
             {/* Show text results if processing is complete and preview is toggled */}
             {processingResult && showTextPreview ? (
               <div className="h-full flex flex-col">
@@ -790,7 +790,7 @@ This is the second paragraph with more content.`;
                 
                 {/* Vertical Scrolling Preview Images */}
                 <div className="flex-1 overflow-y-auto" style={{ minHeight: 0 }}>
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-0.5">
                     {previewPages.map((page, index) => {
                       if (page === -1) {
                         return (
@@ -806,10 +806,10 @@ This is the second paragraph with more content.`;
                       return (
                         <div 
                           key={page} 
-                          className="cursor-pointer hover:scale-105 transition-transform"
+                          className="cursor-pointer hover:scale-[1.02] transition-transform"
                           onClick={() => setEnlargedImage(page)}
                         >
-                          <div className="bg-white rounded shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow relative mb-1">
+                          <div className="bg-white rounded shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow relative">
                             {processingResult && (
                               <div className="absolute inset-0 bg-green-500 bg-opacity-10 z-10 flex items-center justify-center">
                                 <div className="bg-green-100 rounded-full p-1">
@@ -820,9 +820,9 @@ This is the second paragraph with more content.`;
                             <img 
                               src={imageUrl}
                               alt={`Page ${page}`}
-                              className="w-full max-w-[120px] mx-auto h-auto object-contain bg-white p-1"
+                              className="w-full h-auto object-contain bg-white"
                             />
-                            <div className={`px-2 py-1 text-white text-center text-xs ${
+                            <div className={`px-1 py-0.5 text-white text-center text-xs ${
                               processingResult 
                                 ? 'bg-green-600' 
                                 : 'bg-gray-700'
