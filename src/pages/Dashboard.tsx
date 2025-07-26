@@ -51,7 +51,7 @@ export default function Dashboard() {
         <ErrorBoundary>
           <div className="p-3 lg:p-4 space-y-4 max-w-[1600px] mx-auto">
             {/* Quick Upload Section */}
-            {hasCredits && (
+            {(userLoading || hasCredits) && (
             <div className="">
               <div className="text-center mb-3">
                 <h1 className="text-xl font-bold text-gray-900 mb-1">
@@ -131,7 +131,7 @@ export default function Dashboard() {
 
 
         {/* No Credits Message */}
-        {!hasCredits && (
+        {!userLoading && !hasCredits && (
           <div className="bg-gray-50 rounded-lg p-8 text-center">
             <div className="max-w-md mx-auto">
               <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
