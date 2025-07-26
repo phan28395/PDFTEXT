@@ -39,15 +39,6 @@ export default function Dashboard() {
   const stats = { totalFiles: userData?.files_processed || 0 };
   const statsLoading = userLoading;
 
-  // Helper function for credit balance styling
-  const getCreditColor = () => {
-    // Don't show warning colors during loading
-    if (userLoading) return 'bg-gray-50 border-gray-200 text-gray-600';
-    
-    if (creditBalance < 100) return 'bg-red-50 border-red-200 text-red-600';
-    if (creditBalance < 500) return 'bg-yellow-50 border-yellow-200 text-yellow-600';
-    return 'bg-green-50 border-green-200 text-green-600';
-  };
 
   return (
       <DashboardLayout>
@@ -83,53 +74,6 @@ export default function Dashboard() {
           )}
         
 
-        {/* Free Trial or Credit Balance Alert */}
-        {!userLoading && isTrialUser && freePages <= 2 && (
-          <div className="border rounded-lg p-4 bg-blue-50 border-blue-200 text-blue-600">
-            <div className="flex items-center">
-              <AlertCircle className="h-5 w-5 mr-3" />
-              <div className="flex-1">
-                <h3 className="font-medium">
-                  {freePages === 0 ? 'Free Trial Completed' : `${freePages} Free Pages Remaining`}
-                </h3>
-                <p className="text-sm mt-1">
-                  {freePages === 0 ? 
-                    'Add credits to continue processing at just $0.012 per page.' :
-                    `Try our service risk-free! After your free pages, processing costs just $0.012 per page.`
-                  }
-                </p>
-              </div>
-              <Link
-                to="/account-settings"
-                className="ml-4 text-sm underline hover:no-underline"
-              >
-                Add Credits
-              </Link>
-            </div>
-          </div>
-        )}
-        {!userLoading && !isTrialUser && creditBalance < 500 && (
-          <div className={`border rounded-lg p-4 ${getCreditColor()}`}>
-            <div className="flex items-center">
-              <AlertCircle className="h-5 w-5 mr-3" />
-              <div className="flex-1">
-                <h3 className="font-medium">
-                  {creditBalance < 100 ? 'Low Credit Balance' : 'Credit Balance Running Low'}
-                </h3>
-                <p className="text-sm mt-1">
-                  You have ${(creditBalance / 100).toFixed(2)} in credits remaining. 
-                  {creditBalance < costPerPage ? ' Add credits to continue processing.' : ` Enough for ${Math.floor(creditBalance / costPerPage)} pages.`}
-                </p>
-              </div>
-              <Link
-                to="/account-settings"
-                className="ml-4 text-sm underline hover:no-underline"
-              >
-                Add Credits
-              </Link>
-            </div>
-          </div>
-        )}
 
 
 
