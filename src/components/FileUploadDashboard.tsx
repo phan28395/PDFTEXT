@@ -356,7 +356,7 @@ This is the second paragraph with more content.`;
   return (
     <div className={`w-full ${className}`}>
       {/* Progress Steps */}
-      <div className="flex items-center justify-center mb-8">
+      <div className="flex items-center justify-center mb-4">
         <div className="flex items-center space-x-8">
           <div className={`flex items-center ${selectedFile ? 'text-green-600' : 'text-gray-400'}`}>
             <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
@@ -392,14 +392,14 @@ This is the second paragraph with more content.`;
       </div>
 
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-        <div className="grid grid-cols-1 xl:grid-cols-5 min-h-[700px]">
+        <div className="grid grid-cols-1 xl:grid-cols-5 min-h-[500px]">
           
           {/* Left Panel - Upload & Controls */}
-          <div className="xl:col-span-2 p-8 bg-gradient-to-br from-gray-50 to-gray-100 border-r border-gray-200 space-y-6">
+          <div className="xl:col-span-2 p-6 bg-gradient-to-br from-gray-50 to-gray-100 border-r border-gray-200 space-y-4">
             {/* Upload Zone */}
             <div
               className={`
-                relative border-2 border-dashed rounded-xl p-10 text-center transition-all duration-200 shadow-sm
+                relative border-2 border-dashed rounded-xl p-6 text-center transition-all duration-200 shadow-sm
                 ${selectedFile ? 'border-green-400 bg-green-50/50' : 
                   dragActive ? 'border-blue-500 bg-blue-50' : 
                   'border-gray-300 hover:border-blue-400 bg-white'}
@@ -439,11 +439,11 @@ This is the second paragraph with more content.`;
                 </div>
               ) : (
                 <>
-                  <Upload className={`h-16 w-16 mx-auto mb-4 ${dragActive ? 'text-blue-600' : 'text-gray-400'}`} />
-                  <p className="text-lg font-medium text-gray-900">
+                  <Upload className={`h-12 w-12 mx-auto mb-3 ${dragActive ? 'text-blue-600' : 'text-gray-400'}`} />
+                  <p className="text-base font-medium text-gray-900">
                     {dragActive ? 'Drop your PDF here' : 'Drag & drop your PDF here'}
                   </p>
-                  <p className="text-sm text-gray-500 mt-2">or click to browse • Max {maxFileSize}MB</p>
+                  <p className="text-sm text-gray-500 mt-1">or click to browse • Max {maxFileSize}MB</p>
                 </>
               )}
               
@@ -464,39 +464,39 @@ This is the second paragraph with more content.`;
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     onClick={() => setSelectedDocumentType('standard')}
-                    className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 ${
+                    className={`p-3 rounded-xl border-2 transition-all transform hover:scale-105 ${
                       selectedDocumentType === 'standard' 
                         ? 'border-blue-500 bg-blue-50 shadow-md' 
                         : 'border-gray-200 hover:border-gray-300 bg-white'
                     }`}
                   >
-                    <FileText className={`h-6 w-6 mx-auto mb-2 ${
+                    <FileText className={`h-5 w-5 mx-auto mb-1 ${
                       selectedDocumentType === 'standard' ? 'text-blue-600' : 'text-gray-600'
                     }`} />
                     <span className="text-xs font-medium">Text</span>
                   </button>
                   <button
                     onClick={() => setSelectedDocumentType('latex')}
-                    className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 ${
+                    className={`p-3 rounded-xl border-2 transition-all transform hover:scale-105 ${
                       selectedDocumentType === 'latex' 
                         ? 'border-purple-500 bg-purple-50 shadow-md' 
                         : 'border-gray-200 hover:border-gray-300 bg-white'
                     }`}
                   >
-                    <Sparkles className={`h-6 w-6 mx-auto mb-2 ${
+                    <Sparkles className={`h-5 w-5 mx-auto mb-1 ${
                       selectedDocumentType === 'latex' ? 'text-purple-600' : 'text-gray-600'
                     }`} />
                     <span className="text-xs font-medium">Math</span>
                   </button>
                   <button
                     onClick={() => setSelectedDocumentType('forms')}
-                    className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 ${
+                    className={`p-3 rounded-xl border-2 transition-all transform hover:scale-105 ${
                       selectedDocumentType === 'forms' 
                         ? 'border-green-500 bg-green-50 shadow-md' 
                         : 'border-gray-200 hover:border-gray-300 bg-white'
                     }`}
                   >
-                    <FileSearch className={`h-6 w-6 mx-auto mb-2 ${
+                    <FileSearch className={`h-5 w-5 mx-auto mb-1 ${
                       selectedDocumentType === 'forms' ? 'text-green-600' : 'text-gray-600'
                     }`} />
                     <span className="text-xs font-medium">Forms</span>
@@ -617,8 +617,8 @@ This is the second paragraph with more content.`;
 
             {/* Cost Preview */}
             {selectedFile && (
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-100">
-                <div className="flex items-center justify-between mb-3">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
+                <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700 flex items-center">
                     <DollarSign className="h-4 w-4 mr-1" />
                     Processing Cost
@@ -648,7 +648,7 @@ This is the second paragraph with more content.`;
               <button
                 onClick={handleProcess}
                 disabled={uploading || !cost.canAfford || uploadingToCloudinary}
-                className="w-full py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center font-medium shadow-lg"
+                className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center font-medium shadow-lg"
               >
                 {uploading ? (
                   <>
@@ -716,7 +716,7 @@ This is the second paragraph with more content.`;
           </div>
 
           {/* Right Panel - Preview or Text Results */}
-          <div className="xl:col-span-3 bg-white p-8">
+          <div className="xl:col-span-3 bg-white p-6">
             {/* Show text results if processing is complete and preview is toggled */}
             {processingResult && showTextPreview ? (
               <div className="h-full flex flex-col">
@@ -796,8 +796,16 @@ This is the second paragraph with more content.`;
                 
                   {/* Vertical Scrolling Preview Images */}
                   <div className="flex-1 overflow-y-auto">
-                    <div className="grid grid-cols-2 gap-3 p-2">
-                      {previewPages.filter(p => p !== -1).map((page) => {
+                    <div className="flex flex-col gap-3 p-2">
+                      {previewPages.map((page, index) => {
+                        if (page === -1) {
+                          return (
+                            <div key={`ellipsis-${index}`} className="text-center py-2">
+                              <span className="text-gray-400 text-2xl">...</span>
+                            </div>
+                          );
+                        }
+                        
                         const cloudinary = new CloudinaryService();
                         const imageUrl = cloudinary.getPreviewUrl(cloudinaryUpload.publicId, page, 300);
                         
@@ -818,7 +826,7 @@ This is the second paragraph with more content.`;
                               <img 
                                 src={imageUrl}
                                 alt={`Page ${page}`}
-                                className="w-full h-40 object-contain bg-gray-50"
+                                className="w-full h-32 object-contain bg-gray-50"
                                 loading="lazy"
                               />
                               <div className={`px-2 py-1 text-white text-center text-sm ${

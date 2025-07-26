@@ -42,15 +42,15 @@ export default function Dashboard() {
   return (
       <DashboardLayout>
         <ErrorBoundary>
-          <div className="p-4 lg:p-8 space-y-8 max-w-[1600px] mx-auto">
+          <div className="p-4 lg:p-6 space-y-6 max-w-[1600px] mx-auto">
             {/* Quick Upload Section */}
             {hasCredits && (
             <div className="">
-              <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 mb-3">
+              <div className="text-center mb-4">
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">
                   Convert PDF to Text with AI
                 </h1>
-                <p className="text-lg text-gray-600">
+                <p className="text-base text-gray-600">
                   {isTrialUser ? 
                     <span className="inline-flex items-center gap-2">
                       <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
