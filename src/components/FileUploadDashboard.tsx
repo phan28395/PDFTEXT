@@ -319,6 +319,42 @@ export default function FileUploadDashboard({
 
   return (
     <div className={`w-full ${className}`}>
+      {/* Progress Steps */}
+      <div className="flex items-center justify-center mb-8">
+        <div className="flex items-center space-x-8">
+          <div className={`flex items-center ${selectedFile ? 'text-green-600' : 'text-gray-400'}`}>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
+              selectedFile ? 'bg-green-100 text-green-600' : 'bg-gray-100'
+            }`}>
+              1
+            </div>
+            <span className="ml-3 font-medium">Upload PDF</span>
+          </div>
+          
+          <ChevronRight className="h-5 w-5 text-gray-300" />
+          
+          <div className={`flex items-center ${processingResult ? 'text-green-600' : selectedFile ? 'text-blue-600' : 'text-gray-400'}`}>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
+              processingResult ? 'bg-green-100 text-green-600' : selectedFile ? 'bg-blue-100 text-blue-600' : 'bg-gray-100'
+            }`}>
+              2
+            </div>
+            <span className="ml-3 font-medium">Process</span>
+          </div>
+          
+          <ChevronRight className="h-5 w-5 text-gray-300" />
+          
+          <div className={`flex items-center ${processingResult ? 'text-green-600' : 'text-gray-400'}`}>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
+              processingResult ? 'bg-green-100 text-green-600' : 'bg-gray-100'
+            }`}>
+              3
+            </div>
+            <span className="ml-3 font-medium">Download</span>
+          </div>
+        </div>
+      </div>
+
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
         <div className="grid grid-cols-1 xl:grid-cols-5 min-h-[700px]">
           
@@ -392,42 +428,42 @@ export default function FileUploadDashboard({
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     onClick={() => setSelectedDocumentType('standard')}
-                    className={`p-3 rounded-lg border-2 transition-all ${
+                    className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 ${
                       selectedDocumentType === 'standard' 
-                        ? 'border-blue-500 bg-blue-50' 
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-blue-500 bg-blue-50 shadow-md' 
+                        : 'border-gray-200 hover:border-gray-300 bg-white'
                     }`}
                   >
-                    <FileText className={`h-6 w-6 mx-auto mb-1 ${
+                    <FileText className={`h-6 w-6 mx-auto mb-2 ${
                       selectedDocumentType === 'standard' ? 'text-blue-600' : 'text-gray-600'
                     }`} />
-                    <span className="text-xs">Text</span>
+                    <span className="text-xs font-medium">Text</span>
                   </button>
                   <button
                     onClick={() => setSelectedDocumentType('latex')}
-                    className={`p-3 rounded-lg border-2 transition-all ${
+                    className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 ${
                       selectedDocumentType === 'latex' 
-                        ? 'border-purple-500 bg-purple-50' 
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-purple-500 bg-purple-50 shadow-md' 
+                        : 'border-gray-200 hover:border-gray-300 bg-white'
                     }`}
                   >
-                    <Sparkles className={`h-6 w-6 mx-auto mb-1 ${
+                    <Sparkles className={`h-6 w-6 mx-auto mb-2 ${
                       selectedDocumentType === 'latex' ? 'text-purple-600' : 'text-gray-600'
                     }`} />
-                    <span className="text-xs">Math</span>
+                    <span className="text-xs font-medium">Math</span>
                   </button>
                   <button
                     onClick={() => setSelectedDocumentType('forms')}
-                    className={`p-3 rounded-lg border-2 transition-all ${
+                    className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 ${
                       selectedDocumentType === 'forms' 
-                        ? 'border-green-500 bg-green-50' 
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-green-500 bg-green-50 shadow-md' 
+                        : 'border-gray-200 hover:border-gray-300 bg-white'
                     }`}
                   >
-                    <FileSearch className={`h-6 w-6 mx-auto mb-1 ${
+                    <FileSearch className={`h-6 w-6 mx-auto mb-2 ${
                       selectedDocumentType === 'forms' ? 'text-green-600' : 'text-gray-600'
                     }`} />
-                    <span className="text-xs">Forms</span>
+                    <span className="text-xs font-medium">Forms</span>
                   </button>
                 </div>
               </div>
@@ -512,12 +548,17 @@ export default function FileUploadDashboard({
               <button
                 onClick={handleProcess}
                 disabled={uploading || !cost.canAfford || uploadingToCloudinary}
-                className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                className="w-full py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center font-medium shadow-lg"
               >
                 {uploading ? (
                   <>
                     <Loader2 className="h-5 w-5 mr-2 animate-spin" />
                     Processing... {uploadProgress}%
+                  </>
+                ) : uploadingToCloudinary ? (
+                  <>
+                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                    Preparing preview...
                   </>
                 ) : (
                   <>
@@ -607,7 +648,7 @@ export default function FileUploadDashboard({
                 
                 <button
                   onClick={handleDownload}
-                  className="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center"
+                  className="w-full py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-[1.02] flex items-center justify-center font-medium shadow-lg"
                 >
                   <Download className="h-5 w-5 mr-2" />
                   Download as {selectedOutputFormat.toUpperCase()}
@@ -668,7 +709,7 @@ export default function FileUploadDashboard({
                 
                 {/* Text Preview Area */}
                 <div className="flex-1 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
-                  <pre className="h-full overflow-auto p-6 text-sm text-gray-800 font-mono whitespace-pre-wrap">
+                  <pre className="h-full overflow-auto p-6 text-sm text-gray-800 font-mono whitespace-pre-wrap bg-gradient-to-br from-gray-50 to-white">
                     {formatTextForOutput(processingResult.text)}
                   </pre>
                 </div>
@@ -684,8 +725,25 @@ export default function FileUploadDashboard({
             ) : !cloudinaryUpload ? (
               <div className="h-full flex items-center justify-center text-center">
                 <div>
-                  <Loader2 className="h-16 w-16 text-gray-400 animate-spin mx-auto mb-4" />
-                  <p className="text-gray-500">Generating preview...</p>
+                  <Loader2 className="h-16 w-16 text-blue-500 animate-spin mx-auto mb-4" />
+                  <p className="text-lg font-medium text-gray-700">Analyzing your PDF</p>
+                  <p className="text-sm text-gray-500 mt-2">Generating page previews...</p>
+                </div>
+              </div>
+            ) : uploading ? (
+              <div className="h-full flex items-center justify-center text-center">
+                <div className="max-w-sm">
+                  <div className="relative">
+                    <Loader2 className="h-20 w-20 text-blue-500 animate-spin mx-auto mb-4" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-2xl font-bold text-blue-600">{uploadProgress}%</span>
+                    </div>
+                  </div>
+                  <p className="text-lg font-medium text-gray-700 mb-2">Processing your document</p>
+                  <p className="text-sm text-gray-500">Extracting text from {cost.totalPages} pages...</p>
+                  <div className="mt-4 bg-gray-200 rounded-full h-2">
+                    <div className="bg-blue-600 h-2 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+                  </div>
                 </div>
               </div>
             ) : (
