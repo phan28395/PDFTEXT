@@ -77,8 +77,8 @@ export default function FileUploadDashboard({
     const pages: number[] = [];
     
     if (processAllPages) {
-      // Show first 2, last 2, and middle if > 5 pages
-      if (total <= 5) {
+      // Show all pages if <= 10, otherwise show first 2, last 2 with ellipsis
+      if (total <= 10) {
         for (let i = 1; i <= total; i++) pages.push(i);
       } else {
         pages.push(1, 2, -1); // -1 represents "..."
@@ -392,10 +392,10 @@ This is the second paragraph with more content.`;
       </div>
 
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-        <div className="grid grid-cols-1 xl:grid-cols-12 min-h-[500px]">
+        <div className="grid grid-cols-1 xl:grid-cols-12 h-[500px]">
           
           {/* Left Panel - Upload & Controls */}
-          <div className="xl:col-span-3 p-4 bg-gradient-to-br from-gray-50 to-gray-100 border-r border-gray-200 space-y-3">
+          <div className="xl:col-span-3 p-4 bg-gradient-to-br from-gray-50 to-gray-100 border-r border-gray-200 space-y-3 h-full overflow-y-auto">
             {/* Upload Zone */}
             <div
               className={`
@@ -716,7 +716,7 @@ This is the second paragraph with more content.`;
           </div>
 
           {/* Middle Panel - Document Preview */}
-          <div className="xl:col-span-3 bg-white p-4 border-r border-gray-200">
+          <div className="xl:col-span-3 bg-white p-4 border-r border-gray-200 flex flex-col h-full">
             {/* Show text results if processing is complete and preview is toggled */}
             {processingResult && showTextPreview ? (
               <div className="h-full flex flex-col">
@@ -779,7 +779,7 @@ This is the second paragraph with more content.`;
               </div>
             ) : (
               <div className="h-full flex flex-col">
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-3 flex-shrink-0">
                   <div>
                     <h3 className="text-base font-semibold text-gray-900">
                       {processingResult ? 'Document Processed' : 'Document Preview'}
@@ -793,8 +793,8 @@ This is the second paragraph with more content.`;
                 </div>
                 
                 {/* Vertical Scrolling Preview Images */}
-                <div className="flex-1 overflow-y-auto">
-                  <div className="flex flex-col gap-2 px-2">
+                <div className="flex-1 overflow-y-auto min-h-0">
+                  <div className="flex flex-col gap-2 px-2 pb-2">
                     {previewPages.map((page, index) => {
                       if (page === -1) {
                         return (
@@ -825,7 +825,6 @@ This is the second paragraph with more content.`;
                               src={imageUrl}
                               alt={`Page ${page}`}
                               className="w-full h-auto object-contain bg-gray-50"
-                              loading="lazy"
                             />
                             <div className={`px-2 py-1 text-white text-center text-xs ${
                               processingResult 
@@ -845,7 +844,7 @@ This is the second paragraph with more content.`;
           </div>
           
           {/* Right Panel - Output Format Preview */}
-          <div className="xl:col-span-6 bg-white p-6">
+          <div className="xl:col-span-6 bg-white p-6 h-full">
             {!selectedFile ? (
               <div className="h-full flex items-center justify-center text-center bg-gray-50 rounded-xl">
                 <div>
