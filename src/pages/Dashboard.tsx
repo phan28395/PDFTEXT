@@ -19,9 +19,16 @@ export default function Dashboard() {
   const { user } = useAuth();
   const { user: userData, loading: userLoading, refreshUser } = useUser(user?.id);
 
+  // Debug logging
+  console.log('Dashboard userData:', {
+    userData,
+    free_pages_remaining: userData?.free_pages_remaining,
+    loading: userLoading
+  });
+
   // Calculate usage statistics - pay per use model with free trial
   const creditBalance = userData?.credit_balance || 0; // Credits in cents
-  const freePages = userData?.free_pages_remaining || 5; // Default 5 free pages
+  const freePages = userData?.free_pages_remaining ?? 0; // Use actual value, even if 0
   const costPerPage = 1.2; // 1.2 cents per page ($0.012)
   const hasCredits = creditBalance >= costPerPage || freePages > 0;
   const isTrialUser = freePages > 0;
@@ -51,15 +58,18 @@ export default function Dashboard() {
                   Convert PDF to Text with AI
                 </h1>
                 <p className="text-sm text-gray-600">
-                  {isTrialUser ? 
+                  {userLoading ? (
+                    <span className="text-gray-400">Loading...</span>
+                  ) : isTrialUser ? (
                     <span className="inline-flex items-center gap-2">
                       <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-medium">
                         {freePages} free pages remaining
                       </span>
                       <span>Then just $0.012 per page</span>
-                    </span> :
+                    </span>
+                  ) : (
                     'Fast, accurate text extraction powered by Google Document AI'
-                  }
+                  )}
                 </p>
               </div>
               <FileUploadDashboard 
