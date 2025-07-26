@@ -354,9 +354,9 @@ This is the second paragraph with more content.`;
   const cost = calculateCost();
 
   return (
-    <div className={`w-full ${className}`}>
+    <div className={`w-full h-full flex flex-col ${className}`}>
       {/* Progress Steps */}
-      <div className="flex items-center justify-center mb-4">
+      <div className="flex items-center justify-center mb-4 flex-shrink-0">
         <div className="flex items-center space-x-8">
           <div className={`flex items-center ${selectedFile ? 'text-green-600' : 'text-gray-400'}`}>
             <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
@@ -391,11 +391,11 @@ This is the second paragraph with more content.`;
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-        <div className="grid grid-cols-1 xl:grid-cols-12 h-[600px]">
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden h-[calc(100vh-200px)] min-h-[600px]">
+        <div className="grid grid-cols-1 xl:grid-cols-12 h-full">
           
           {/* Left Panel - Upload & Controls */}
-          <div className="xl:col-span-3 p-4 bg-gradient-to-br from-gray-50 to-gray-100 border-r border-gray-200 space-y-3 h-full">
+          <div className="xl:col-span-3 p-4 bg-gradient-to-br from-gray-50 to-gray-100 border-r border-gray-200 space-y-3 h-full overflow-y-auto">
             {/* Upload Zone */}
             <div
               className={`
