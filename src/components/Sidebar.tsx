@@ -23,14 +23,6 @@ export default function Sidebar({ className = '', isOpen = true, onClose }: Side
   const { user } = useAuth();
   const { user: userData } = useUser(user?.id);
 
-  const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: Home },
-    { name: 'Upload PDF', href: '/upload', icon: Upload },
-    { name: 'History', href: '/history', icon: History },
-    { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-    { name: 'Settings', href: '/settings', icon: Settings },
-    { name: 'Help', href: '/help', icon: HelpCircle },
-  ];
 
   const isActivePath = (href: string) => {
     return location.pathname === href;
