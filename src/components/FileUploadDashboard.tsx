@@ -392,10 +392,10 @@ This is the second paragraph with more content.`;
       </div>
 
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-        <div className="grid grid-cols-1 xl:grid-cols-12 h-[500px]">
+        <div className="grid grid-cols-1 xl:grid-cols-12 h-[600px]">
           
           {/* Left Panel - Upload & Controls */}
-          <div className="xl:col-span-3 p-4 bg-gradient-to-br from-gray-50 to-gray-100 border-r border-gray-200 space-y-3 h-full overflow-y-auto">
+          <div className="xl:col-span-3 p-4 bg-gradient-to-br from-gray-50 to-gray-100 border-r border-gray-200 space-y-3 h-full">
             {/* Upload Zone */}
             <div
               className={`
