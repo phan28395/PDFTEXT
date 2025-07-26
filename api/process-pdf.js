@@ -316,21 +316,29 @@ Page 2 content would appear here...
       const [result] = await client.processDocument(request);
       const document = result.document;
       
-      // Filter pages based on range
-      if (document.pages && validStartPage !== 1 || validEndPage !== documentPageCount) {
-        const selectedPages = document.pages.slice(validStartPage - 1, validEndPage);
-        totalText = selectedPages.map(page => page.paragraphs?.map(p => p.layout?.textAnchor?.content || '').join('\n') || '').join('\n\n');
-        totalPages = pagesToProcess;
-        totalConfidence = selectedPages[0]?.detectedLanguages?.[0]?.confidence || 0.95;
-        processedPages = selectedPages.map((page, index) => ({
-          pageNumber: validStartPage + index,
-          text: page.paragraphs?.map(p => p.layout?.textAnchor?.content || '').join('\n') || '',
-          confidence: page.detectedLanguages?.[0]?.confidence || 0.95
-        }));
+      // For pure output, always use document.text directly
+      totalText = document.text || '';
+      totalPages = pagesToProcess;
+      totalConfidence = document.pages?.[0]?.detectedLanguages?.[0]?.confidence || 0.95;
+      
+      // If page range is specified, extract substring from full text
+      if (document.pages && (validStartPage !== 1 || validEndPage !== documentPageCount)) {
+        const pageTextLength = Math.ceil(document.text.length / document.pages.length);
+        const startIndex = (validStartPage - 1) * pageTextLength;
+        const endIndex = Math.min(validEndPage * pageTextLength, document.text.length);
+        totalText = document.text.substring(startIndex, endIndex);
+        
+        processedPages = [];
+        for (let i = validStartPage - 1; i < validEndPage; i++) {
+          const pageStartIndex = i * pageTextLength;
+          const pageEndIndex = Math.min((i + 1) * pageTextLength, document.text.length);
+          processedPages.push({
+            pageNumber: i + 1,
+            text: document.text.substring(pageStartIndex, pageEndIndex),
+            confidence: document.pages[i]?.detectedLanguages?.[0]?.confidence || 0.95
+          });
+        }
       } else {
-        totalText = document.text || '';
-        totalPages = pagesToProcess;
-        totalConfidence = document.pages?.[0]?.detectedLanguages?.[0]?.confidence || 0.95;
         processedPages = [{ pageNumber: 1, text: totalText, confidence: totalConfidence }];
       }
       
@@ -518,65 +526,25 @@ async function processDocumentIndividually(fileBuffer, processorName, client, do
       const page = document.pages[i];
       const pageNumber = i + 1; // Convert back to 1-based for display
       
-      // Extract text for this page
+      // For pure output, extract text directly from document.text using page boundaries
+      // This preserves the exact text as Google returns it
       let pageText = '';
       
-      // Extract paragraphs
-      if (page.paragraphs) {
-        for (const paragraph of page.paragraphs) {
-          const paragraphText = extractTextFromLayout(paragraph.layout, document.text);
-          pageText += paragraphText + '\n';
-        }
-      }
-      
-      // Extract form fields and tables if Forms mode
-      if (page.formFields) {
-        pageText += '\n\n--- Form Fields ---\n';
-        for (const field of page.formFields) {
-          const fieldName = extractTextFromLayout(field.fieldName.textAnchor, document.text);
-          const fieldValue = extractTextFromLayout(field.fieldValue.textAnchor, document.text);
-          pageText += `${fieldName}: ${fieldValue}\n`;
-        }
-      }
-      
-      if (page.tables) {
-        pageText += '\n\n--- Tables ---\n';
-        for (const table of page.tables) {
-          // Extract table content
-          for (const row of table.bodyRows || []) {
-            for (const cell of row.cells || []) {
-              const cellText = extractTextFromLayout(cell.layout, document.text);
-              pageText += cellText + '\t';
-            }
-            pageText += '\n';
-          }
-        }
-      }
-      
-      // If no paragraphs, try to extract from tokens or use fallback
-      if (!pageText && page.tokens) {
-        for (const token of page.tokens) {
-          const tokenText = extractTextFromLayout(token.layout, document.text);
-          pageText += tokenText + ' ';
-        }
-      }
-      
-      // Fallback to basic text extraction
-      if (!pageText) {
-        const startIndex = i * Math.floor(document.text.length / document.pages.length);
-        const endIndex = (i + 1) * Math.floor(document.text.length / document.pages.length);
-        pageText = document.text.substring(startIndex, endIndex);
-      }
+      // Calculate approximate page boundaries in the full text
+      const pageTextLength = Math.ceil(document.text.length / document.pages.length);
+      const startIndex = i * pageTextLength;
+      const endIndex = Math.min((i + 1) * pageTextLength, document.text.length);
+      pageText = document.text.substring(startIndex, endIndex);
       
       const confidence = page.detectedLanguages?.[0]?.confidence || 0.95;
       
       processedPages.push({
         pageNumber: pageNumber,
-        text: pageText.trim(),
+        text: pageText,  // No trim - keep pure
         confidence: confidence
       });
       
-      combinedText += pageText + '\n\n';
+      combinedText += pageText;  // No added newlines - keep pure
       totalConfidence += confidence;
     }
     
@@ -592,7 +560,7 @@ async function processDocumentIndividually(fileBuffer, processorName, client, do
     const actualProcessedCount = pageEnd - pageStart;
     return {
       pages: processedPages,
-      combinedText: combinedText.trim(),
+      combinedText: combinedText,  // No trim - keep pure
       pageCount: actualProcessedCount,
       averageConfidence: actualProcessedCount > 0 ? totalConfidence / actualProcessedCount : 0
     };
