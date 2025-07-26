@@ -580,7 +580,7 @@ export default function FileUploadDashboard({
                       }
                       
                       const cloudinary = new CloudinaryService();
-                      const imageUrl = cloudinary.getPreviewUrl(cloudinaryUpload.publicId, page, 300);
+                      const imageUrl = cloudinary.getPreviewUrl(cloudinaryUpload.publicId, page, 800);
                       
                       return (
                         <div 
@@ -592,7 +592,7 @@ export default function FileUploadDashboard({
                             <img 
                               src={imageUrl}
                               alt={`Page ${page}`}
-                              className="h-[400px] w-auto"
+                              className="h-[400px] w-auto object-contain"
                               loading="lazy"
                             />
                             <div className="px-3 py-2 bg-gray-900 text-white text-center text-sm">
@@ -624,7 +624,7 @@ export default function FileUploadDashboard({
               <X className="h-6 w-6" />
             </button>
             <img 
-              src={new CloudinaryService().getPreviewUrl(cloudinaryUpload.publicId, enlargedImage, 1200)}
+              src={new CloudinaryService().getPreviewUrl(cloudinaryUpload.publicId, enlargedImage, 800)}
               alt={`Page ${enlargedImage} enlarged`}
               className="max-w-full max-h-[90vh] rounded-lg shadow-2xl"
               onClick={(e) => e.stopPropagation()}
