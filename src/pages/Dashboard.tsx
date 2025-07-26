@@ -57,9 +57,6 @@ export default function Dashboard() {
                 <h1 className="text-xl font-bold text-gray-900 mb-1">
                   Convert PDF to Text with AI
                 </h1>
-                <p className="text-sm text-gray-600">
-                  Fast, accurate text extraction powered by Google Document AI
-                </p>
                 {!userLoading && isTrialUser && (
                   <p className="text-sm mt-1">
                     <span className="inline-flex items-center gap-2">
