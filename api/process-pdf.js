@@ -224,7 +224,7 @@ Page 2 content would appear here...
         filename: file.originalFilename || 'document.pdf',
         original_filename: file.originalFilename || 'document.pdf',
         file_size: file.size,
-        pages_processed: 0, // Will update after processing
+        pages_processed: 1, // Set to 1 initially to satisfy constraint, will update after processing
         output_format: 'txt',
         processing_status: 'processing',
         document_type: documentType,
