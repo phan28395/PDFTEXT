@@ -58,19 +58,18 @@ export default function Dashboard() {
                   Convert PDF to Text with AI
                 </h1>
                 <p className="text-sm text-gray-600">
-                  {userLoading ? (
-                    <span className="text-gray-400">Loading...</span>
-                  ) : isTrialUser ? (
+                  Fast, accurate text extraction powered by Google Document AI
+                </p>
+                {!userLoading && isTrialUser && (
+                  <p className="text-sm mt-1">
                     <span className="inline-flex items-center gap-2">
                       <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-medium">
                         {freePages} free pages remaining
                       </span>
-                      <span>Then just $0.012 per page</span>
+                      <span className="text-gray-600">Then just $0.012 per page</span>
                     </span>
-                  ) : (
-                    'Fast, accurate text extraction powered by Google Document AI'
-                  )}
-                </p>
+                  </p>
+                )}
               </div>
               <FileUploadDashboard 
                 className="w-full"
